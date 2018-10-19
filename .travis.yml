@@ -1,0 +1,23 @@
+sudo: required
+
+services: docker
+language: python
+
+python: 3.5
+
+env:
+  global:
+   - secure: "HmM0SslMzPp8eHG9qGpj/o1kPMXZLoA43GpAtMwUT5+LRtWw6ZdFEHagMbnoYC4fyCRJK3wTvE8jBpcXYXGUM/uF+Be+hAESgwuU2h6TaD0f3sf4SQgdEgdl9hZ+WcZtMgBH9OkJGCpt0XD3jl01xrDkN50EcKfy0+JtGvm25wRPmi9OSCL4J5B8rhtrzDoa0OSorP4kRtDX6Rr4Ta5jGv1jEHRH/D67+gnn7kfBUwqQPKRa9fnTaPV4LkSJCWqIJAv41NImxImKUdGXmjtpnv1XbBPbCETJfb7uU5nBxvwgt7Mgmy4qIqinvFl0DXFU5B4AA2/4oRAcoUsjJv1n8Z1xPFQvjCyLRtnDNs8rYNhcDbho2tfCyH+LV75SNDcVophxys33D614knd7XzowB7VKvWE/CSMI2M5WWVNF4AbWaLQ/t65eTxM/7+pIAqfENUT0smfoI0rWfCm3VwRf3OBSik71KuYR1UkO1LhaZFEAbJGUKdB0QaxuAUl9DwkLKkc57ZH1zcuakAK6IYt/chi3oghCWuOTbQ1vbaWH1ECfPtux5lHt5KvkSSbNec25plu1QjuaHHsAu0UFHRHdAeq1xkgquc1bqoz8FLHILsr6ZeWSm8WwSNfVQWxCCaRWk92dI7Fk8hn27m3XjmqeREBF7+gqYwi6uTIAbm08h34="
+
+before_install:
+- docker login -u vnoel -p $DOCKER_HUB_PASSWORD
+
+install:
+- pip install -U docker-compose
+
+script:
+- docker-compose build maboss-server
+
+after_script:
+- docker tag maboss-server:latest vnoel/maboss-server:latest
+- docker push vnoel/maboss-server:latest
