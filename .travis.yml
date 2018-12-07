@@ -18,6 +18,6 @@ install:
 script:
 - docker-compose build maboss-server
 
-after_script:
+after_success:
 - docker tag maboss-server:latest vnoel/maboss-server:latest
 - docker push vnoel/maboss-server:latest
