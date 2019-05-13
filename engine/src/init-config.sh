@@ -27,7 +27,7 @@ $CXX -c $tmpfile > /dev/null 2>&1
 
 if [ $? = 0 ]
 then
-   echo "#define HAS_RAND48_T" > $CONFIG_H
+   echo "//#define HAS_RAND48_T" > $CONFIG_H
 else
    echo "//#define HAS_RAND48_T" > $CONFIG_H
 fi
@@ -46,7 +46,7 @@ $CXX -c $tmpfile > /dev/null 2>&1
 
 if [ $? = 0 ]
 then
-   echo "#define HAS_RAND48" >> $CONFIG_H
+   echo "//#define HAS_RAND48" >> $CONFIG_H
 else
    echo "//#define HAS_RAND48" >> $CONFIG_H
 fi
