@@ -34,6 +34,7 @@
 
 #include "RandomGenerator.h"
 #include "BooleanNetwork.h"
+#include <ctime>
 class MaBEstEngine;
 
 class RunConfig {
