@@ -17,7 +17,14 @@ MAXNODES = 64
 #MABOSS := MaBoSS
 endif
 
-MABOSS := MaBoSS$(INFIX)
+ifeq ($(OS),Windows_NT)
+	WINDOWS_FLAG := -DWINDOWS
+	MABOSS := MaBoSS$(INFIX).exe
+else
+	LDL_FLAG := -ldl
+	MABOSS := MaBoSS$(INFIX)
+endif
+
 MABOSS_SERVER := MaBoSS$(INFIX)-server
 MABOSS_CLIENT := MaBoSS-client
 
@@ -41,6 +48,7 @@ BISON = bison
 CHECK_FLEX  = $(FLEX) --version > /dev/null
 CHECK_BISON = $(BISON) --version > /dev/null
 
+LIB_SRC := MaBEstEngine.cc EnsembleEngine.cc Cumulator.cc ProbaDist.cc BooleanNetwork.cc Function.cc BuiltinFunctions.cc RunConfig.cc LogicalExprGen.cc Utils.cc
 LIB_OBJS := MaBEstEngine$(INFIX).o EnsembleEngine$(INFIX).o Cumulator$(INFIX).o ProbaDist$(INFIX).o BooleanNetwork$(INFIX).o BooleanGrammar$(INFIX).o RunConfigGrammar$(INFIX).o Function$(INFIX).o BuiltinFunctions$(INFIX).o RunConfig$(INFIX).o LogicalExprGen$(INFIX).o Utils$(INFIX).o
 SERVER_OBJS := Server.o DataStreamer.o RPC.o
 
@@ -53,6 +61,7 @@ else
 MABOSS_OBJS = $(LIB_OBJS)
 endif
 
+.PHONY: maboss
 maboss: $(MABOSS)
 
 all: $(MABOSS_LIB) $(MABOSS) $(MABOSS_SERVER) $(MABOSS_CLIENT)
@@ -61,7 +70,7 @@ $(MABOSS_ALIB): $(LIB_OBJS)
 	ar rcs $(MABOSS_ALIB) $+
 
 $(MABOSS_LIB): $(LIB_OBJS)
-	$(CXX) -shared -o $(MABOSS_LIB) $+ -lpthread -ldl
+	$(CXX) -shared -o $(MABOSS_LIB) $+ -lpthread $(LDL_FLAG)
 
 $(FUNC_MODULE): $(FUNC_MODULE).o $(LIB_OBJS)
 	$(CXX) -shared -o $(FUNC_MODULE).so $(FUNC_MODULE).o $(LIB_OBJS) -lpthread -L.
@@ -73,26 +82,26 @@ $(FUNC_MODULE): $(FUNC_MODULE).o $(LIB_OBJS)
 
 $(MABOSS): MaBoSS$(INFIX).o $(MABOSS_OBJS)
 ifdef USE_LIB
-	$(CXX) -o $(MABOSS) MaBoSS$(INFIX).o -l$(MABOSS_LIBNAME) -lpthread -L. -ldl
+	$(CXX) -o $(MABOSS) MaBoSS$(INFIX).o -l$(MABOSS_LIBNAME) -lpthread -L. $(LDL_FLAG)
 else
-	$(CXX) -o $(MABOSS) $+ -lpthread -ldl
+	$(CXX) -o $(MABOSS) $+ -lpthread $(LDL_FLAG)
 endif
 
 $(MABOSS_SERVER): MaBoSS$(INFIX)-server.o $(MABOSS_OBJS) $(SERVER_OBJS)
 ifdef USE_LIB
-	$(CXX) -o $(MABOSS_SERVER) MaBoSS$(INFIX)-server.o $(SERVER_OBJS) -l$(MABOSS_LIBNAME) -lpthread -L. -ldl
+	$(CXX) -o $(MABOSS_SERVER) MaBoSS$(INFIX)-server.o $(SERVER_OBJS) -l$(MABOSS_LIBNAME) -lpthread -L. $(LDL_FLAG)
 else
-	$(CXX) -o $(MABOSS_SERVER) $+ -lpthread -ldl
+	$(CXX) -o $(MABOSS_SERVER) $+ -lpthread $(LDL_FLAG)
 endif
 
 $(MABOSS_CLIENT): MaBoSS-client.o Client.o DataStreamer.o RPC.o Utils$(INFIX).o
-	$(CXX) -o $(MABOSS_CLIENT) $+ -lpthread -ldl
+	$(CXX) -o $(MABOSS_CLIENT) $+ -lpthread $(LDL_FLAG)
 
 init:
 	@CXX=$(CXX) sh init-config.sh
 
 %$(INFIX).o: %.cc
-	$(CXX) $(CXXFLAGS) -c $*.cc -o $*$(INFIX).o
+	$(CXX) $(CXXFLAGS) $(WINDOWS_FLAG) -c $*.cc -o $*$(INFIX).o
 
 %$(INFIX)-server.o: %-server.cc
 	$(CXX) $(CXXFLAGS) -c $*-server.cc -o $*$(INFIX)-server.o
@@ -101,7 +110,7 @@ force-init:
 	@CXX=$(CXX) sh init-config.sh force
 
 depend:
-	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) *.cc > depend_tmp.mk
+	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) $(WINDOWS_FLAG) $(LIB_SRC) > depend_tmp.mk
 	@sed -e "s/\.o:/$(INFIX).o:/g" depend_tmp.mk > depend.mk
 	@rm -f depend_tmp.mk
 
