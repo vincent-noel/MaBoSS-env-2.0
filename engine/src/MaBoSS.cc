@@ -285,11 +285,11 @@ int main(int argc, char* argv[])
       output_statdist = new std::ofstream((std::string(output) + "_statdist.csv").c_str());
       output_fp = new std::ofstream((std::string(output) + "_fp.csv").c_str());
 
-      time(&start_time);
+      // time(&start_time);
       EnsembleEngine engine(networks, runconfig);
       engine.run(NULL);
       engine.display(*output_probtraj, *output_statdist, *output_fp, hexfloat);
-      time(&end_time);
+      // time(&end_time);
 
       // ((std::ofstream*)output_run)->close();
       ((std::ofstream*)output_probtraj)->close();
@@ -357,13 +357,13 @@ int main(int argc, char* argv[])
       output_statdist = new std::ofstream((std::string(output) + "_statdist.csv").c_str());
       output_fp = new std::ofstream((std::string(output) + "_fp.csv").c_str());
 
-      time(&start_time);
+      // time(&start_time);
       MaBEstEngine mabest(network, runconfig);
       mabest.run(output_traj);
       mabest.display(*output_probtraj, *output_statdist, *output_fp, hexfloat);
-      time(&end_time);
+      // time(&end_time);
 
-      runconfig->display(network, start_time, end_time, mabest, *output_run);
+      // runconfig->display(network, start_time, end_time, mabest, *output_run);
 
       ((std::ofstream*)output_run)->close();
       if (NULL != output_traj) {
