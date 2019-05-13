@@ -35,7 +35,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <iomanip>
-#include <dlfcn.h>
+#ifndef WINDOWS
+  #include <dlfcn.h>
+#endif
 #include <iostream>
 
 const std::string MaBEstEngine::VERSION = "2.0";
@@ -47,7 +49,7 @@ void MaBEstEngine::init()
   extern void builtin_functions_init();
   builtin_functions_init();
 }
-
+#ifndef WINDOWS
 void MaBEstEngine::loadUserFuncs(const char* module)
 {
   init();
@@ -67,6 +69,8 @@ void MaBEstEngine::loadUserFuncs(const char* module)
   init_t init_fun = (init_t)sym;
   init_fun(Function::getFuncMap());
 }
+
+#endif
 
 MaBEstEngine::MaBEstEngine(Network* network, RunConfig* runconfig) :
   network(network), time_tick(runconfig->getTimeTick()), max_time(runconfig->getMaxTime()), sample_count(runconfig->getSampleCount()), discrete_time(runconfig->isDiscreteTime()), thread_count(runconfig->getThreadCount()) {

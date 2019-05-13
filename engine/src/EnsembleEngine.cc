@@ -34,7 +34,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <iomanip>
-#include <dlfcn.h>
+#ifndef WINDOWS
+  #include <dlfcn.h>
+#endif
 #include <iostream>
 
 const std::string EnsembleEngine::VERSION = "1.0";
@@ -47,6 +49,7 @@ void MetaEngine::init()
   builtin_functions_init();
 }
 
+#ifndef WINDOWS
 void MetaEngine::loadUserFuncs(const char* module)
 {
   init();
@@ -66,6 +69,7 @@ void MetaEngine::loadUserFuncs(const char* module)
   init_t init_fun = (init_t)sym;
   init_fun(Function::getFuncMap());
 }
+#endif
 
 EnsembleEngine::EnsembleEngine(std::vector<Network*> networks, RunConfig* runconfig) :
   MetaEngine(runconfig), networks(networks) {
