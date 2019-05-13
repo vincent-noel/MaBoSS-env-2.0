@@ -17,7 +17,14 @@ MAXNODES = 64
 #MABOSS := MaBoSS
 endif
 
-MABOSS := MaBoSS$(INFIX)
+ifeq ($(OS),Windows_NT)
+	WINDOWS_FLAG := -DWINDOWS
+	MABOSS := MaBoSS$(INFIX).exe
+else
+	LDL_FLAG := -ldl
+	MABOSS := MaBoSS$(INFIX)
+endif
+
 MABOSS_SERVER := MaBoSS$(INFIX)-server
 MABOSS_CLIENT := MaBoSS-client
 
@@ -62,7 +69,7 @@ $(MABOSS_ALIB): $(LIB_OBJS)
 	ar rcs $(MABOSS_ALIB) $+
 
 $(MABOSS_LIB): $(LIB_OBJS)
-	g++ -shared -o $(MABOSS_LIB) $+ -lpthread -ldl
+	g++ -shared -o $(MABOSS_LIB) $+ -lpthread $(LDL_FLAG)
 
 $(FUNC_MODULE): $(FUNC_MODULE).o $(LIB_OBJS)
 	g++ -shared -o $(FUNC_MODULE).so $(FUNC_MODULE).o $(LIB_OBJS) -lpthread -L.
@@ -74,26 +81,26 @@ $(FUNC_MODULE): $(FUNC_MODULE).o $(LIB_OBJS)
 
 $(MABOSS): MaBoSS$(INFIX).o $(MABOSS_OBJS)
 ifdef USE_LIB
-	g++ -o $(MABOSS) MaBoSS$(INFIX).o -l$(MABOSS_LIBNAME) -lpthread -L. -ldl
+	g++ -o $(MABOSS) MaBoSS$(INFIX).o -l$(MABOSS_LIBNAME) -lpthread -L. $(LDL_FLAG)
 else
-	g++ -o $(MABOSS) $+ -lpthread -ldl
+	g++ -o $(MABOSS) $+ -lpthread $(LDL_FLAG)
 endif
 
 $(MABOSS_SERVER): MaBoSS$(INFIX)-server.o $(MABOSS_OBJS) $(SERVER_OBJS)
 ifdef USE_LIB
-	g++ -o $(MABOSS_SERVER) MaBoSS$(INFIX)-server.o $(SERVER_OBJS) -l$(MABOSS_LIBNAME) -lpthread -L. -ldl
+	g++ -o $(MABOSS_SERVER) MaBoSS$(INFIX)-server.o $(SERVER_OBJS) -l$(MABOSS_LIBNAME) -lpthread -L. $(LDL_FLAG)
 else
-	g++ -o $(MABOSS_SERVER) $+ -lpthread -ldl
+	g++ -o $(MABOSS_SERVER) $+ -lpthread $(LDL_FLAG)
 endif
 
 $(MABOSS_CLIENT): MaBoSS-client.o Client.o DataStreamer.o RPC.o Utils$(INFIX).o
-	g++ -o $(MABOSS_CLIENT) $+ -lpthread -ldl
+	g++ -o $(MABOSS_CLIENT) $+ -lpthread $(LDL_FLAG)
 
 init:
 	@CXX=$(CXX) sh init-config.sh
 
 %$(INFIX).o: %.cc
-	$(CXX) $(CXXFLAGS) -c $*.cc -o $*$(INFIX).o
+	$(CXX) $(CXXFLAGS) $(WINDOWS_FLAG) -c $*.cc -o $*$(INFIX).o
 
 %$(INFIX)-server.o: %-server.cc
 	$(CXX) $(CXXFLAGS) -c $*-server.cc -o $*$(INFIX)-server.o
@@ -102,11 +109,7 @@ force-init:
 	@CXX=$(CXX) sh init-config.sh force
 
 depend:
-ifeq ($(OS),Windows_NT)
-	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) -DWINDOWS $(LIB_SRC) > depend_tmp.mk
-else
-	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) $(LIB_SRC) > depend_tmp.mk
-endif
+	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) $(WINDOWS_FLAG) $(LIB_SRC) > depend_tmp.mk
 	@sed -e "s/\.o:/$(INFIX).o:/g" depend_tmp.mk > depend.mk
 	@rm -f depend_tmp.mk
 
