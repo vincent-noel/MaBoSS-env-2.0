@@ -41,6 +41,7 @@ BISON = bison
 CHECK_FLEX  = $(FLEX) --version > /dev/null
 CHECK_BISON = $(BISON) --version > /dev/null
 
+LIB_SRC := MaBEstEngine.cc EnsembleEngine.cc Cumulator.cc ProbaDist.cc BooleanNetwork.cc Function.cc BuiltinFunctions.cc RunConfig.cc LogicalExprGen.cc Utils.cc
 LIB_OBJS := MaBEstEngine$(INFIX).o EnsembleEngine$(INFIX).o Cumulator$(INFIX).o ProbaDist$(INFIX).o BooleanNetwork$(INFIX).o BooleanGrammar$(INFIX).o RunConfigGrammar$(INFIX).o Function$(INFIX).o BuiltinFunctions$(INFIX).o RunConfig$(INFIX).o LogicalExprGen$(INFIX).o Utils$(INFIX).o
 SERVER_OBJS := Server.o DataStreamer.o RPC.o
 
@@ -101,7 +102,11 @@ force-init:
 	@CXX=$(CXX) sh init-config.sh force
 
 depend:
-	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) *.cc > depend_tmp.mk
+ifeq ($(OS),Windows_NT)
+	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) -DWINDOWS $(LIB_SRC) > depend_tmp.mk
+else
+	@$(MAKEDEPEND) -DMAXNODES=$(MAXNODES) $(LIB_SRC) > depend_tmp.mk
+endif
 	@sed -e "s/\.o:/$(INFIX).o:/g" depend_tmp.mk > depend.mk
 	@rm -f depend_tmp.mk
 
