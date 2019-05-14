@@ -131,7 +131,16 @@ NodeIndex MaBEstEngine::getTargetNode(RandomGenerator* random_generator, const M
   MAP<NodeIndex, double>::const_iterator begin = nodeTransitionRates.begin();
   MAP<NodeIndex, double>::const_iterator end = nodeTransitionRates.end();
   NodeIndex node_idx = INVALID_NODE_INDEX;
+#ifndef WINDOWS
   while (begin != end && random_rate > 0.) {
+#else
+  // On UNIX platforms, the rng returns values which belongs to ]0, 1]
+  // but on windows, the rng returns values which belongs to [0,1], 
+  // so we can have the case of random_rate begin null. 
+  // To ensure that it will at least once enter the loop, we relax the 
+  // condition to accept random_rate == 0
+  while (begin != end && random_rate >= 0.) {
+#endif
     node_idx = (*begin).first;
     double rate = (*begin).second;
     random_rate -= rate;
