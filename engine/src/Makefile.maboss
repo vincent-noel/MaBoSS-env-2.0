@@ -61,6 +61,7 @@ else
 MABOSS_OBJS = $(LIB_OBJS)
 endif
 
+.PHONY: maboss
 maboss: $(MABOSS)
 
 all: $(MABOSS_LIB) $(MABOSS) $(MABOSS_SERVER) $(MABOSS_CLIENT)
