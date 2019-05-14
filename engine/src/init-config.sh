@@ -23,11 +23,12 @@ int main()
 }
 EOF
 
-$CXX -c $tmpfile > /dev/null 2>&1
+g++ -c $tmpfile > /dev/null 2>&1
+# echo "Rand48_T Return:  $?"
 
 if [ $? = 0 ]
 then
-   echo "//#define HAS_RAND48_T" > $CONFIG_H
+   echo "#define HAS_RAND48_T" > $CONFIG_H
 else
    echo "//#define HAS_RAND48_T" > $CONFIG_H
 fi
@@ -42,11 +43,12 @@ int main()
 }
 EOF
 
-$CXX -c $tmpfile > /dev/null 2>&1
+g++ -c $tmpfile > /dev/null 2>&1
+# echo "Rand48 Return:  $?"
 
 if [ $? = 0 ]
 then
-   echo "//#define HAS_RAND48" >> $CONFIG_H
+   echo "#define HAS_RAND48" >> $CONFIG_H
 else
    echo "//#define HAS_RAND48" >> $CONFIG_H
 fi
@@ -62,7 +64,7 @@ int main()
 }
 EOF
 
-$CXX -c $tmpfile -std=c++0x > /dev/null 2>&1
+g++ -c $tmpfile -std=c++0x > /dev/null 2>&1
 
 if [ $? = 0 ]
 then
@@ -81,7 +83,7 @@ int main()
 }
 EOF
 
-    $CXX -c $tmpfile > /dev/null 2>&1
+    g++ -c $tmpfile > /dev/null 2>&1
     if [ $? = 0 ]
     then
 	echo "// @HAS_UNORDERED_MAP"  >> $CONFIG_H
