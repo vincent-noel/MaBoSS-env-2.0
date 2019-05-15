@@ -125,11 +125,9 @@ int main(int argc, char* argv[])
 	dont_shrink_logical_expressions = true;
       } else if (!strcmp(s, "--ensemble")) {
   ensemble = true;
-  #ifndef WINDOWS
       } else if (!strcmp(s, "--load-user-functions")) {
 	if (nn == argc-1) {std::cerr << '\n' << prog << ": missing value after option " << s << '\n'; return usage();}
 	MaBEstEngine::loadUserFuncs(argv[++nn]);
-  #endif
       } else if (!strcmp(s, "-o") || !strcmp(s, "--output")) {
 	if (nn == argc-1) {std::cerr << '\n' << prog << ": missing value after option " << s << '\n'; return usage();}
 	output = argv[++nn];

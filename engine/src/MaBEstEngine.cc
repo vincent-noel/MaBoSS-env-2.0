@@ -37,6 +37,8 @@
 #include <iomanip>
 #ifndef WINDOWS
   #include <dlfcn.h>
+#else
+  #include <windows.h>
 #endif
 #include <iostream>
 
@@ -49,18 +51,33 @@ void MaBEstEngine::init()
   extern void builtin_functions_init();
   builtin_functions_init();
 }
-#ifndef WINDOWS
+
 void MaBEstEngine::loadUserFuncs(const char* module)
 {
   init();
 
+#ifndef WINDOWS
   void* dl = dlopen(module, RTLD_LAZY);
+#else
+  void* dl = LoadLibrary(module);
+#endif
+
   if (NULL == dl) {
-    std::cerr << dlerror() << "\n";
+#ifndef WINDOWS    
+    std::cerr << dlerror() << std::endl;
+#else
+    std::cerr << GetLastError() << std::endl;
+#endif
     exit(1);
   }
 
+#ifndef WINDOWS
   void* sym = dlsym(dl, MABOSS_USER_FUNC_INIT);
+#else
+  typedef void (__cdecl *MYPROC)(std::map<std::string, Function*>*);
+  MYPROC sym = (MYPROC) GetProcAddress((HINSTANCE) dl, MABOSS_USER_FUNC_INIT);
+#endif
+
   if (sym == NULL) {
     std::cerr << "symbol " << MABOSS_USER_FUNC_INIT << "() not found in user func module: " << module << "\n";
     exit(1);
@@ -69,8 +86,6 @@ void MaBEstEngine::loadUserFuncs(const char* module)
   init_t init_fun = (init_t)sym;
   init_fun(Function::getFuncMap());
 }
-
-#endif
 
 MaBEstEngine::MaBEstEngine(Network* network, RunConfig* runconfig) :
   network(network), time_tick(runconfig->getTimeTick()), max_time(runconfig->getMaxTime()), sample_count(runconfig->getSampleCount()), discrete_time(runconfig->isDiscreteTime()), thread_count(runconfig->getThreadCount()) {
