@@ -193,6 +193,75 @@ class StandardRandomGenerator : public RandomGenerator {
   }
 };
 
+
+class GLibCRandomGenerator : public RandomGenerator
+{
+  #define MAX 344
+  #define GLIBCRAND_MAX 2147483647
+  int seed;
+  int n;
+  int r[MAX];
+
+  void glibc_srand(int seed) {
+    int i;
+    r[0] = seed;
+    for (i=1; i<31; i++) {
+        r[i] = (16807LL * r[i-1]) % GLIBCRAND_MAX;
+        if (r[i] < 0) {
+        r[i] += GLIBCRAND_MAX;
+        }
+    }
+    for (i=31; i<34; i++) {
+        r[i] = r[i-31];
+    }
+    for (i=34; i<344; i++) {
+        r[i] = r[i-31] + r[i-3];
+    }
+    n = 0;
+  }
+
+  unsigned int glibc_rand() {
+    unsigned int x = r[n%344] = r[(n+313%344)] + r[(n+341)%344];
+    n = (n+1)%344;
+    return x >> 1;
+  }
+
+ public:
+  GLibCRandomGenerator(int seed) : seed(seed) {
+    glibc_srand(seed);
+  }
+
+  bool isPseudoRandom() const {
+    return true;
+  }
+
+  std::string getName() const {
+    return "glibc";
+  }
+
+  unsigned int generateUInt32() {
+    incrGeneratedNumberCount();
+#ifdef USE_DUMMY_RANDOM
+    return ~0U/2;
+#endif
+    return glibc_rand();
+  }
+
+  virtual double generate() {
+    incrGeneratedNumberCount();
+#ifdef USE_DUMMY_RANDOM
+    return 0.5;
+#endif
+    return (double(glibc_rand()) / GLIBCRAND_MAX);
+  }
+
+  virtual void setSeed(int seed) {
+    this->seed = seed;
+    glibc_srand(seed);
+  }
+
+};
+
 class RandomGeneratorFactory {
 
 public:
@@ -210,7 +279,11 @@ public:
   RandomGenerator* generateRandomGenerator(int seed) const {
     switch(type) {
     case STANDARD:
+#ifndef WINDOWS
       return new StandardRandomGenerator(seed);
+#else 
+      return new GLibCRandomGenerator(seed);
+#endif
     case PHYSICAL:
       return new PhysicalRandomGenerator();
     default:
