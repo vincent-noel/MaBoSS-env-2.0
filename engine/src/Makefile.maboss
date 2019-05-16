@@ -40,7 +40,7 @@ CXX = g++
 CXXOPT = -O2
 CXXFLAGS = $(CXXOPT) -Wall -DMAXNODES=$(MAXNODES) $(EXTRA_FLAGS) -fpic
 
-MAKEDEPEND = gcc -M $(EXTRA_FLAGS)
+MAKEDEPEND = $(CXX) -M $(EXTRA_FLAGS)
 
 FLEX = flex
 BISON = bison
@@ -74,11 +74,6 @@ $(MABOSS_LIB): $(LIB_OBJS)
 
 $(FUNC_MODULE): $(FUNC_MODULE).o $(LIB_OBJS)
 	$(CXX) -shared -o $(FUNC_MODULE).so $(FUNC_MODULE).o $(LIB_OBJS) -lpthread -L.
-
-# $(FUNC_MODULE): $(FUNC_MODULE).o $(MABOSS_LIB)
-# 	g++ -shared -o $(FUNC_MODULE).so $(FUNC_MODULE).o -l$(MABOSS_LIBNAME) -lpthread -L.
-# #	g++ -shared -o $(FUNC_MODULE).so $(FUNC_MODULE).o -lpthread -L.
-# #	g++ -shared -o user_func.so user_func.o -weak-lmaboss -lpthread -L.
 
 $(MABOSS): MaBoSS$(INFIX).o $(MABOSS_OBJS)
 ifdef USE_LIB
@@ -164,13 +159,4 @@ install_alib: $(MABOSS_ALIB)
 	cp $(MABOSS_ALIB) ../lib
 	mkdir -p ../include/
 	cp *.h ../include/
-
-#### OBSOLETE
-
-#	g++ -dynamiclib -undefined suppress -flat_namespace -o $(MABOSS_LIB) $+ -lpthread
-
-#$(MABOSS_SERVER): MaBoSS$(INFIX)-server.o MaBEstEngine$(INFIX).o Cumulator$(INFIX).o ProbaDist$(INFIX).o BooleanNetwork$(INFIX).o BooleanGrammar$(INFIX).o RunConfigGrammar$(INFIX).o RunConfig$(INFIX).o LogicalExprGen$(INFIX).o Server.o DataStreamer.o RPC.o Utils$(INFIX).o
-#	g++ -o $(MABOSS_SERVER) $+ -lpthread
-#$(MABOSS): MaBoSS$(INFIX).o MaBEstEngine$(INFIX).o Cumulator$(INFIX).o ProbaDist$(INFIX).o BooleanNetwork$(INFIX).o BooleanGrammar$(INFIX).o RunConfigGrammar$(INFIX).o RunConfig$(INFIX).o LogicalExprGen$(INFIX).o Utils$(INFIX).o
-#	g++ -o $(MABOSS) $+ -lpthread
 
