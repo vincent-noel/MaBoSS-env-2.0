@@ -36,6 +36,8 @@
 #include <iomanip>
 #ifndef WINDOWS
   #include <dlfcn.h>
+#else
+  #include <windows.h>
 #endif
 #include <iostream>
 
@@ -49,18 +51,32 @@ void MetaEngine::init()
   builtin_functions_init();
 }
 
-#ifndef WINDOWS
 void MetaEngine::loadUserFuncs(const char* module)
 {
   init();
 
+#ifndef WINDOWS
   void* dl = dlopen(module, RTLD_LAZY);
+#else
+  void* dl = LoadLibrary(module);
+#endif
+
   if (NULL == dl) {
-    std::cerr << dlerror() << "\n";
+#ifndef WINDOWS    
+    std::cerr << dlerror() << std::endl;
+#else
+    std::cerr << GetLastError() << std::endl;
+#endif
     exit(1);
   }
 
+#ifndef WINDOWS
   void* sym = dlsym(dl, MABOSS_USER_FUNC_INIT);
+#else
+  typedef void (__cdecl *MYPROC)(std::map<std::string, Function*>*);
+  MYPROC sym = (MYPROC) GetProcAddress((HINSTANCE) dl, MABOSS_USER_FUNC_INIT);
+#endif
+
   if (sym == NULL) {
     std::cerr << "symbol " << MABOSS_USER_FUNC_INIT << "() not found in user func module: " << module << "\n";
     exit(1);
@@ -69,7 +85,6 @@ void MetaEngine::loadUserFuncs(const char* module)
   init_t init_fun = (init_t)sym;
   init_fun(Function::getFuncMap());
 }
-#endif
 
 EnsembleEngine::EnsembleEngine(std::vector<Network*> networks, RunConfig* runconfig) :
   MetaEngine(runconfig), networks(networks) {
