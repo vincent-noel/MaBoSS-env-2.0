@@ -44,7 +44,7 @@
 #include <string.h>
 #include <string>
 #include <iostream>
-
+#include <random>
 #include "maboss-config.h"
 
 class RandomGenerator {
@@ -116,86 +116,14 @@ class PhysicalRandomGenerator : public RandomGenerator {
   }
 };
 
-class StandardRandomGenerator : public RandomGenerator {
-
-  int seed;
-#ifdef HAS_RAND48_T
-  drand48_data data;
-#endif
-
- public:
-  StandardRandomGenerator(int seed) : seed(seed) {
-#ifdef HAS_RAND48_T
-    memset(&data, 0, sizeof(data));
-    srand48_r(seed, &data);
-#elif defined(HAS_RAND48)
-    srand48(seed);
-#else
-    srand(seed);
-#endif
-  }
-
-  bool isPseudoRandom() const {
-    return true;
-  }
-
-  std::string getName() const {
-    return "standard";
-  }
-
-  unsigned int generateUInt32() {
-    incrGeneratedNumberCount();
-#ifdef USE_DUMMY_RANDOM
-    return ~0U/2;
-#endif
-#ifdef HAS_RAND48_T
-    long result;
-    lrand48_r(&data, &result);
-#ifdef RANDOM_TRACE
-    std::cout << (unsigned int)result << '\n';
-#endif
-    return (unsigned int)result;
-#elif defined(HAS_RAND48)
-    return lrand48();
-#else
-    return rand();
-#endif
-  }
-
-  virtual double generate() {
-    incrGeneratedNumberCount();
-#ifdef USE_DUMMY_RANDOM
-    return 0.5;
-#endif
-#ifdef HAS_RAND48_T
-    double result;
-    drand48_r(&data, &result);
-#ifdef RANDOM_TRACE
-    std::cout << result << '\n';
-#endif
-    return result;
-#elif defined(HAS_RAND48)
-    return drand48();
-#else
-    return (double(rand()) / RAND_MAX);
-#endif
-  }
-
-  virtual void setSeed(int seed) {
-    this->seed = seed;
-#ifdef HAS_RAND48_T
-    srand48_r(seed, &data);
-#elif defined(HAS_RAND48)
-    srand48(seed);
-#else
-    srand(seed);
-#endif
-  }
-};
-
-
 class GLibCRandomGenerator : public RandomGenerator
 {
+  // Info on this PRNG : https://www.mscs.dal.ca/~selinger/random/
+  // rand() call simplification : https://stackoverflow.com/a/26630526
+  // This is the default prng used by rand, when srand is called
+  // To be more accurate, this is the TYPE_3 rand() algorithm (https://code.woboq.org/userspace/glibc/stdlib/random.c.html)
+  // It is based on a linear-feedback shift register, with the polynomial being x^31 + x^3 + 1
+  // The nice thing about having it here and not in the GNU C library is that we can make it thread_safe
   #define SIZE_R 344
   #define GLIBCRAND_MAX 2147483647
   int seed;
@@ -262,6 +190,58 @@ class GLibCRandomGenerator : public RandomGenerator
 
 };
 
+class MT19937RandomGenerator : public RandomGenerator
+{
+  // Info on this PRNG : http://www.cplusplus.com/reference/random/mt19937/
+
+  int seed;
+  std::mt19937 generator;
+
+  void mt19937_srand(int seed) {
+    std::mt19937 generator(seed);
+  }
+
+  unsigned int mt19937_rand() {
+    return generator();
+  }
+
+ public:
+  MT19937RandomGenerator(int seed) : seed(seed) {
+    mt19937_srand(seed);
+  }
+
+  bool isPseudoRandom() const {
+    return true;
+  }
+
+  std::string getName() const {
+    return "mt19937";
+  }
+
+  unsigned int generateUInt32() {
+    incrGeneratedNumberCount();
+#ifdef USE_DUMMY_RANDOM
+    return ~0U/2;
+#endif
+    return mt19937_rand();
+  }
+
+  virtual double generate() {
+    incrGeneratedNumberCount();
+#ifdef USE_DUMMY_RANDOM
+    return 0.5;
+#endif
+    return (double(mt19937_rand()) / generator.max());
+  }
+
+  virtual void setSeed(int seed) {
+    this->seed = seed;
+    mt19937_srand(seed);
+  }
+
+};
+
+
 class RandomGeneratorFactory {
 
 public:
@@ -279,11 +259,7 @@ public:
   RandomGenerator* generateRandomGenerator(int seed) const {
     switch(type) {
     case STANDARD:
-#ifndef WINDOWS
-      return new StandardRandomGenerator(seed);
-#else 
       return new GLibCRandomGenerator(seed);
-#endif
     case PHYSICAL:
       return new PhysicalRandomGenerator();
     default:
@@ -295,7 +271,7 @@ public:
   std::string getName() const {
     switch(type) {
     case STANDARD:
-      return "standard";
+      return "glibc";
     case PHYSICAL:
       return "physical";
     default:
@@ -319,11 +295,7 @@ public:
   bool isThreadSafe() const {
     switch(type) {
     case STANDARD:
-#ifdef HAS_RAND48_T
       return true;
-#else
-      return false;
-#endif
     case PHYSICAL:
       return true;
     default:
