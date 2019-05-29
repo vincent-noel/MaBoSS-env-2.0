@@ -1,0 +1,15 @@
+dist: xenial
+sudo: required
+
+env:
+  global:
+    - PATH: ${TRAVIS_BUILD_DIR}/engine/pub:$PATH
+
+before_install:
+  - sudo apt-get -qq update && sudo apt-get install -y flex bison
+
+install:
+  - make -C engine/src/ install
+
+script:
+  - bash -c "cd engine/tests; ./test-cellcycle.sh"

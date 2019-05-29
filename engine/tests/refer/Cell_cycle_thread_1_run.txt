@@ -2,17 +2,17 @@
 -------------------------------------------------- Run --------------------------------------------------
 MaBoSS version: 2.0 [networks up to 64 nodes]
 
-Run start time: Mon Jul  2 11:42:37 2018
-Run end time: Mon Jul  2 11:43:18 2018
+Run start time: Wed May 29 12:55:52 2019
+Run end time: Wed May 29 12:56:17 2019
 
-Core user runtime: 33.24 secs using 1 thread
-Core elapsed runtime: 33.59 secs using 1 thread
+Core user runtime: 18.72 secs using 1 thread
+Core elapsed runtime: 19.066 secs using 1 thread
 
-Epilogue user runtime: 1.22 secs using 1 thread
-Epilogue elapsed runtime: 1.449 secs using 1 thread
+Epilogue user runtime: 0.62 secs using 1 thread
+Epilogue elapsed runtime: 0.896 secs using 1 thread
 
-StatDist user runtime: 4.82 secs using 1 thread
-StatDist elapsed runtime: 5.635 secs using 1 thread
+StatDist user runtime: 5.08 secs using 1 thread
+StatDist elapsed runtime: 5.347 secs using 1 thread
 
 Time Tick: 0.2
 Max Time: 5
@@ -20,9 +20,9 @@ Sample Count: 1000000
 StatDist Trajectory Count: 5000
 StatDist Similarity Cache Maximum Size: 20000
 Discrete Time: TRUE
-Random Generator: standard
+Random Generator: glibc
 Seed Pseudo Random: 100
-Generated Number Count: 25000000
+Generated Number Count: 24000000
 
 ---------------------------------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ node CycD {
 
 node Rb {
   logic = NOT CycD AND NOT CycB AND (p27 OR NOT (CycA OR CycE));
-  rate_up = @logic ? $fast : 0;
+  rate_up = @logic ? $fast : log(1, 2);
   rate_down = @logic ? 0 : $fast;
 }
 

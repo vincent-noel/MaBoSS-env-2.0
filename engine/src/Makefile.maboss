@@ -32,9 +32,9 @@ MABOSS_LIBNAME = MaBoSS$(INFIX)
 MABOSS_LIB = lib$(MABOSS_LIBNAME).so
 MABOSS_ALIB = lib$(MABOSS_LIBNAME).a
 
-ifeq ($(shell grep @HAS_UNORDERED_MAP maboss-config.h > /dev/null 2> /dev/null && echo OK), OK)
+#ifeq ($(shell grep @HAS_UNORDERED_MAP maboss-config.h > /dev/null 2> /dev/null && echo OK), OK)
 EXTRA_FLAGS = -std=c++11
-endif
+#endif
 
 CXX = g++
 CXXOPT = -O2
