@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%files
+    . /opt/MaBoSS-env-2.0
+
+%post
+    apt-get -qq update
+    apt-get install -yq git flex bison gcc g++ make
+    bash -c "cd /opt/MaBoSS-env-2.0/engine/src; make install"
+    bash -c "cd /opt/MaBoSS-env-2.0/engine/src; make MAXNODES=128 install"
+    bash -c "cd /opt/MaBoSS-env-2.0/engine/src; make MAXNODES=256 install"
+
+%runscript
+    /opt/MaBoSS-env-2.0/engine/pub/MaBoSS-server -q --host 0.0.0.0 --port 7777 \
+    & /opt/MaBoSS-env-2.0/engine/pub/MaBoSS_128n-server -q --host 0.0.0.0 --port 7778 \
+    & /opt/MaBoSS-env-2.0/engine/pub/MaBoSS_256n-server -q --host 0.0.0.0 --port 7779
