@@ -57,7 +57,7 @@ if ($#CommandLine > 1)
 	    }
     }
 }
-else {$NoStatTable=1;}
+# else {$NoStatTable=1;}
 $_=$cfgFile;
 s/\.cfg//;
 my @tempList=split(/\//,$_);

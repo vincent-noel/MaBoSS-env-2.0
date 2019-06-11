@@ -1,15 +1,32 @@
-dist: xenial
-sudo: required
+language: cpp
 
-env:
-  global:
-    - PATH: ${TRAVIS_BUILD_DIR}/engine/pub:$PATH
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+      sudo: required
+    - os: osx
+    - os: windows
 
 before_install:
-  - sudo apt-get -qq update && sudo apt-get install -y flex bison
+  - if [ $TRAVIS_OS_NAME = 'osx' ]; then
+      brew install flex bison;
+    elif [ $TRAVIS_OS_NAME = 'windows' ]; then
+      powershell -executionpolicy bypass -command 'choco install msys2; taskkill -IM "gpg-agent.exe" -F; RefreshEnv.cmd; Set-Alias bash "C:\tools\msys64\usr\bin\bash.exe"; bash -lc "pacman --noconfirm -Syu; pacman --noconfirm -S make flex bison gcc diffutils"';
+    else
+      sudo apt-get -qq update && sudo apt-get install -y flex bison;
+    fi
 
 install:
-  - make -C engine/src/ install
+  - if [ $TRAVIS_OS_NAME = 'windows' ]; then
+      powershell -executionpolicy bypass -command 'Set-Alias bash "C:\tools\msys64\usr\bin\bash.exe"; bash -lc "cd ./engine/src; g++ --version; make"';
+    else
+      bash -c "cd engine/src; make";
+    fi
 
 script:
-  - bash -c "cd engine/tests; ./test-cellcycle.sh"
+  - if [ $TRAVIS_OS_NAME = 'windows' ]; then
+      powershell -executionpolicy bypass -command 'Set-Alias bash "C:\tools\msys64\usr\bin\bash.exe"; bash -lc "cd ./engine/tests; ./test-cellcycle.sh"';
+    else 
+      bash -c "cd engine/tests; ./test-cellcycle.sh";
+    fi
