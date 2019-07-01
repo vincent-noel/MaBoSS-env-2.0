@@ -36,8 +36,15 @@ MABOSS_ALIB = lib$(MABOSS_LIBNAME).a
 EXTRA_FLAGS = -std=c++11
 #endif
 
+DEBUG = 0
+
 CXX = g++
+ifdef DEBUG
+CXXOPT = -g3
+else
 CXXOPT = -O2
+endif
+
 CXXFLAGS = $(CXXOPT) -Wall -DMAXNODES=$(MAXNODES) $(EXTRA_FLAGS) -fpic
 
 MAKEDEPEND = $(CXX) -M $(EXTRA_FLAGS)
