@@ -131,6 +131,13 @@ class GLibCRandomGenerator : public RandomGenerator
   int r[SIZE_R];
 
   void glibc_srand(int seed) {
+
+    /* We must make sure the seed is not 0.  Take arbitrarily 1 in this case.  
+       Source: https://sourceware.org/git/?p=glibc.git;a=blob;f=stdlib/random_r.c;hb=glibc-2.15#l180
+    */
+    if (seed == 0)
+      seed = 1;
+    
     int i;
     r[0] = seed;
     for (i=1; i<31; i++) {
