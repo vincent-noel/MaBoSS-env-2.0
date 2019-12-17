@@ -5,17 +5,31 @@ matrix:
     - os: linux
       dist: xenial
       sudo: required
+      env: TASK=TestMaBoSS
     - os: osx
+      env: TASK=TestMaBoSS
+    - os: linux
+      dist: xenial
+      sudo: required
+      services: docker
+      env: TASK=BuildCMaBoSS
 
 before_install:
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then
-      brew install flex bison;
-      pip install numpy;
-    else
-      sudo apt-get -qq update && sudo apt-get install -y flex bison;
-      sudo pip install numpy;
-    fi
-
+  if [ $TASK = 'TestMaBoSS' ]; then
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+        brew install flex bison;
+        pip install numpy;
+      else
+        sudo apt-get -qq update && sudo apt-get install -y flex bison;
+        sudo pip install numpy;
+      fi
+  elif [ $TASK = 'BuildCMaBoSS' ]; then
+    cd engine/src;
+    make;
+    cd ../python;
+    cp -r ../src .;
+    docker run --rm -e PLAT=manylinux1_x86_64 -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/build-wheels.sh;
+  fi
 install:
   - bash -c "cd engine/src; make install";
 
