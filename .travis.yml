@@ -46,7 +46,18 @@ matrix:
       dist: xenial
       sudo: required
       env: TASK=BuildMaBoSSSingularity
-      
+    - stage: deploy
+      os: osx
+      env: PYTHON_VERSION=3.5 TASK=BuildCMaBoSS
+    - stage: deploy
+      os: osx
+      env: PYTHON_VERSION=3.6 TASK=BuildCMaBoSS
+    - stage: deploy
+      os: osx
+      env: PYTHON_VERSION=3.7 TASK=BuildCMaBoSS
+    - stage: deploy
+      os: osx
+      env: PYTHON_VERSION=3.8 TASK=BuildCMaBoSS
 
 before_install:
   if [ $TASK = 'TestMaBoSS' ]; then
@@ -74,12 +85,24 @@ before_install:
     sudo pip install numpy;
   
   elif [ $TASK = 'BuildCMaBoSS' ]; then
+    
     cd engine/src;
     make;
     cd ../python;
     cp -r ../src .;
-    docker run --rm -e PLAT=manylinux1_x86_64 -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/build-wheels.sh;
+        
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+
+      FULL_PYTHON_VERSION=`pyenv install -l | sed 's/ *//' | grep -e "^$PYTHON_VERSION\.[0-9]*$" | tail -n 1`;
+      CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)" pyenv install $FULL_PYTHON_VERSION;
+      pyenv local $FULL_PYTHON_VERSION;
+      /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/pip install wheel twine;
+
+    else
+      sudo pip install twine;
+    fi
   fi
+
 install:
   if [ $TASK = 'TestMaBoSS' ]; then
     bash -c "cd engine/src; make install; make MAXNODES=128 install";
@@ -95,6 +118,15 @@ install:
     singularity run maboss-server.simg & 
     bash -c "cd engine/src; make";
       
+  elif [ $TASK = 'BuildCMaBoSS' ]; then
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+      /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/pip wheel . -w wheelhouse;
+  
+    else
+      docker run --rm -e PLAT=manylinux1_x86_64 -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/build-wheels.sh;
+    
+    fi
+
   elif [ $TASK = 'BuildMaBoSSDocker' ]; then
     sudo pip3 install -U docker-compose;
 
@@ -118,6 +150,15 @@ script:
   
   elif [ $TASK = 'TestMaBoSSSingularity' ]; then
     bash -c "cd engine/tests; bash ./test-container.sh";
+
+  elif [ $TASK = 'BuildCMaBoSS' ]; then
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+      /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/twine upload -u vincent-noel -p $PYPI_PASS --skip-existing wheelhouse/*;
+  
+    else
+      twine upload -u vincent-noel -p $PYPI_PASS --skip-existing wheelhouse/*;
+  
+    fi
 
   elif [ $TASK = 'BuildMaBoSSDocker' ]; then
     docker-compose build maboss-server;
