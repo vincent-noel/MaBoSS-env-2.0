@@ -2,11 +2,15 @@ language: cpp
 
 matrix:
   include:
-    - os: linux
+    - stage: test
+      os: linux
       dist: xenial
       sudo: required
-    - os: osx
-
+      env: TASK=TestMaBoSS
+    - stage: test
+      os: osx
+      env: TASK=TestMaBoSS
+   
 before_install:
   - if [ $TRAVIS_OS_NAME = 'osx' ]; then
       brew install flex bison;
