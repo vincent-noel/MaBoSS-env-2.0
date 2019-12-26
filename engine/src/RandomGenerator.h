@@ -44,7 +44,7 @@
 #include <string.h>
 #include <string>
 #include <iostream>
-
+#include <random>
 #include "maboss-config.h"
 
 class RandomGenerator {
@@ -122,22 +122,67 @@ class PhysicalRandomGenerator : public RandomGenerator {
   }
 };
 
-class StandardRandomGenerator : public RandomGenerator {
-
+class GLibCRandomGenerator : public RandomGenerator
+{
+  // Info on this PRNG : https://www.mscs.dal.ca/~selinger/random/
+  // rand() call simplification : https://stackoverflow.com/a/26630526
+  // This is the default prng used by rand, when srand is called
+  // To be more accurate, this is the TYPE_3 rand() algorithm (https://code.woboq.org/userspace/glibc/stdlib/random.c.html)
+  // It is based on a linear-feedback shift register, with the polynomial being x^31 + x^3 + 1
+  // The nice thing about having it here and not in the GNU C library is that we can make it thread_safe
+  
   int seed;
+  
 #ifdef HAS_RAND48_T
   drand48_data data;
-#endif
+#else
+  
+  #define SIZE_R 344
+  #define GLIBCRAND_MAX 2147483647
+  
+  int n;
+  int r[SIZE_R];
 
+  void glibc_srand(int seed) {
+
+    /* We must make sure the seed is not 0.  Take arbitrarily 1 in this case.  
+       Source: https://sourceware.org/git/?p=glibc.git;a=blob;f=stdlib/random_r.c;hb=glibc-2.15#l180
+    */
+    if (seed == 0)
+      seed = 1;
+    
+    int i;
+    r[0] = seed;
+    for (i=1; i<31; i++) {
+        r[i] = (16807LL * r[i-1]) % GLIBCRAND_MAX;
+        if (r[i] < 0) {
+        r[i] += GLIBCRAND_MAX;
+        }
+    }
+    for (i=31; i<34; i++) {
+        r[i] = r[i-31];
+    }
+    for (i=34; i<SIZE_R; i++) {
+        r[i] = r[i-31] + r[i-3];
+    }
+    n = 0;
+  }
+
+  unsigned int glibc_rand() {
+    unsigned int x = r[n%SIZE_R] = r[(n+313)%SIZE_R] + r[(n+341)%SIZE_R];
+    n = (n+1)%SIZE_R;
+    return x >> 1;
+  }
+#endif
  public:
-  StandardRandomGenerator(int seed) : seed(seed) {
+  GLibCRandomGenerator(int seed) : seed(seed) {
 #ifdef HAS_RAND48_T
     memset(&data, 0, sizeof(data));
     srand48_r(seed, &data);
 #elif defined(HAS_RAND48)
     srand48(seed);
 #else
-    srand(seed);
+    glibc_srand(seed);
 #endif
   }
 
@@ -146,7 +191,7 @@ class StandardRandomGenerator : public RandomGenerator {
   }
 
   std::string getName() const {
-    return "standard";
+    return "glibc";
   }
 
   unsigned int generateUInt32() {
@@ -164,7 +209,7 @@ class StandardRandomGenerator : public RandomGenerator {
 #elif defined(HAS_RAND48)
     return lrand48();
 #else
-    return rand();
+    return glibc_rand();
 #endif
   }
 
@@ -182,9 +227,11 @@ class StandardRandomGenerator : public RandomGenerator {
     return result;
 #elif defined(HAS_RAND48)
     return drand48();
+
 #else
-    return (double(rand()) / RAND_MAX);
+    return double(glibc_rand()) / GLIBCRAND_MAX;
 #endif
+
   }
 
   virtual void setSeed(int seed) {
@@ -194,16 +241,70 @@ class StandardRandomGenerator : public RandomGenerator {
 #elif defined(HAS_RAND48)
     srand48(seed);
 #else
-    srand(seed);
+    glibc_srand(seed);
 #endif
   }
+
 };
+
+class MT19937RandomGenerator : public RandomGenerator
+{
+  // Info on this PRNG : http://www.cplusplus.com/reference/random/mt19937/
+
+  int seed;
+  std::mt19937 generator;
+
+  void mt19937_srand(int seed) {
+    std::mt19937 generator(seed);
+  }
+
+  unsigned int mt19937_rand() {
+    return generator();
+  }
+
+ public:
+  MT19937RandomGenerator(int seed) : seed(seed) {
+    mt19937_srand(seed);
+  }
+
+  bool isPseudoRandom() const {
+    return true;
+  }
+
+  std::string getName() const {
+    return "mt19937";
+  }
+
+  unsigned int generateUInt32() {
+    incrGeneratedNumberCount();
+#ifdef USE_DUMMY_RANDOM
+    return ~0U/2;
+#endif
+    return mt19937_rand();
+  }
+
+  virtual double generate() {
+    incrGeneratedNumberCount();
+#ifdef USE_DUMMY_RANDOM
+    return 0.5;
+#endif
+    return (double(mt19937_rand()) / generator.max());
+  }
+
+  virtual void setSeed(int seed) {
+    this->seed = seed;
+    mt19937_srand(seed);
+  }
+
+};
+
 
 class RandomGeneratorFactory {
 
 public:
   enum Type {
     STANDARD = 1,
+    MERSENNE_TWISTER,
     PHYSICAL
   };
 
@@ -216,7 +317,9 @@ public:
   RandomGenerator* generateRandomGenerator(int seed) const {
     switch(type) {
     case STANDARD:
-      return new StandardRandomGenerator(seed);
+      return new GLibCRandomGenerator(seed);
+    case MERSENNE_TWISTER:
+      return new MT19937RandomGenerator(seed);
     case PHYSICAL:
       return new PhysicalRandomGenerator();
     default:
@@ -228,7 +331,9 @@ public:
   std::string getName() const {
     switch(type) {
     case STANDARD:
-      return "standard";
+      return "glibc";
+    case MERSENNE_TWISTER:
+      return "mt19937";
     case PHYSICAL:
       return "physical";
     default:
@@ -241,6 +346,8 @@ public:
     switch(type) {
     case STANDARD:
       return true;
+    case MERSENNE_TWISTER:
+      return true;
     case PHYSICAL:
       return false;
     default:
@@ -252,11 +359,9 @@ public:
   bool isThreadSafe() const {
     switch(type) {
     case STANDARD:
-#ifdef HAS_RAND48_T
       return true;
-#else
-      return false;
-#endif
+    case MERSENNE_TWISTER:
+      return true;
     case PHYSICAL:
       return true;
     default:
