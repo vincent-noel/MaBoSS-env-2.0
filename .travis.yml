@@ -31,6 +31,14 @@ matrix:
     - stage: test
       os: linux
       dist: xenial
+      python: 3.8
+      env: TASK=TestCMaBoSS
+    - stage: test
+      os: osx
+      env: TASK=TestCMaBoSS PYTHON_VERSION=3.8
+    - stage: deploy
+      os: linux
+      dist: xenial
       sudo: required
       services: docker
       env: TASK=BuildCMaBoSS
@@ -68,6 +76,16 @@ before_install:
         sudo pip install numpy;
       fi
 
+  elif [ $TASK = 'TestCMaBoSS' ]; then
+      if [ $TRAVIS_OS_NAME = 'osx' ]; then
+        brew install flex bison;
+        FULL_PYTHON_VERSION=`pyenv install -l | sed 's/ *//' | grep -e "^$PYTHON_VERSION\.[0-9]*$" | tail -n 1`;
+        CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)" pyenv install $FULL_PYTHON_VERSION;
+        pyenv local $FULL_PYTHON_VERSION;
+      else
+        sudo apt-get -qq update && sudo apt-get install -y flex bison;
+      fi
+
   elif [ $TASK = 'TestMaBoSSDocker' ]; then
     sudo apt-get -qq update;
     sudo apt-get install -yq python3-pip python3-setuptools;
@@ -85,7 +103,7 @@ before_install:
     sudo pip install numpy;
   
   elif [ $TASK = 'BuildCMaBoSS' ]; then
-    
+    sudo apt-get -qq update && sudo apt-get install -y flex bison;
     cd engine/src;
     make;
     cd ../python;
@@ -106,6 +124,17 @@ before_install:
 install:
   if [ $TASK = 'TestMaBoSS' ]; then
     bash -c "cd engine/src; make install; make MAXNODES=128 install";
+
+  elif [ $TASK = 'TestCMaBoSS' ]; then
+    cd engine/src;
+    make;
+    cd ../python;
+    cp -r ../src .;  
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+      /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/python3 setup.py build_ext --inplace;
+    else
+      python3 setup.py build_ext --inplace;
+    fi
 
   elif [ $TASK = 'TestMaBoSSDocker' ]; then
     sudo pip3 install -U docker-compose;
@@ -145,6 +174,15 @@ script:
       bash -c "cd engine/tests; bash ./test-ewing.sh";
       bash -c "cd engine/tests; bash ./test-server.sh";
 
+  elif [ $TASK = 'TestCMaBoSS' ]; then
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+      /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/python3 -m unittest test;
+      /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/python3 -m unittest test_128n;
+    else
+      python3 -m unittest test;
+      python3 -m unittest test_128n;
+    fi
+  
   elif [ $TASK = 'TestMaBoSSDocker' ]; then
     bash -c "cd engine/tests; bash ./test-container.sh";
   
