@@ -132,6 +132,14 @@ before_install:
     echo "$DOCKER_HUB_PASSWORD" | docker login --username vnoel --password-stdin;
     sudo apt-get -qq update;
     sudo apt-get install -yq python3-pip python3-setuptools;
+
+  elif [ $TASK = 'TestMaBoSSSingularity' ]; then
+    wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list;
+    sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9;
+    sudo apt-get -qq update;
+    sudo apt-get install -yq python-virtualenv singularity-container debootstrap;
+    sudo pip install numpy;
+
   fi
 
 install:
