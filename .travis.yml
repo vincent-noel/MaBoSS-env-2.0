@@ -78,14 +78,12 @@ before_install:
       fi
 
   elif [ $TASK = 'TestCMaBoSS' ]; then
-      if [ $TRAVIS_OS_NAME = 'osx' ]; then
-        brew install flex bison;
-        FULL_PYTHON_VERSION=`pyenv install -l | sed 's/ *//' | grep -e "^$PYTHON_VERSION\.[0-9]*$" | tail -n 1`;
-        CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)" pyenv install $FULL_PYTHON_VERSION;
-        pyenv local $FULL_PYTHON_VERSION;
-      else
-        sudo apt-get -qq update && sudo apt-get install -y flex bison;
-      fi
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+      brew install flex bison;
+      FULL_PYTHON_VERSION=`pyenv install -l | sed 's/ *//' | grep -e "^$PYTHON_VERSION\.[0-9]*$" | tail -n 1`;
+      CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)" pyenv install $FULL_PYTHON_VERSION;
+      pyenv local $FULL_PYTHON_VERSION;
+    fi
 
   elif [ $TASK = 'TestMaBoSSDocker' ]; then
     sudo apt-get -qq update;
@@ -150,7 +148,6 @@ install:
     else
       python3 setup.py build_ext --inplace;
     fi
-
   elif [ $TASK = 'TestMaBoSSDocker' ]; then
     sudo pip3 install -U docker-compose;
     sudo pip install numpy;
@@ -176,8 +173,6 @@ install:
     FULL_PYTHON_VERSION=`pyenv install -l | sed 's/ *//' | grep -e "^3.8\.[0-9]*$" | tail -n 1`;
     pyenv local $FULL_PYTHON_VERSION;
     /Users/travis/.pyenv/versions/$FULL_PYTHON_VERSION/bin/pip wheel . -w wheelhouse;
-    
-
   
     else
       docker run --rm -e PLAT=manylinux1_x86_64 -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/build-wheels.sh;
