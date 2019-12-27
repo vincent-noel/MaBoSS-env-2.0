@@ -12,14 +12,14 @@ matrix:
       env: TASK=TestMaBoSS
    
 before_install:
-  - if [ $TRAVIS_OS_NAME = 'osx' ]; then
-      brew install flex bison;
-      pip install numpy;
-    else
-      sudo apt-get -qq update && sudo apt-get install -y flex bison;
-      sudo pip install numpy;
-    fi
-
+  if [ $TASK = 'TestMaBoSS' ]; then
+    if [ $TRAVIS_OS_NAME = 'osx' ]; then
+        brew install flex bison;
+        pip install numpy;
+      else
+        sudo pip install numpy;
+      fi
+  fi
 install:
   - bash -c "cd engine/src; make install";
 
