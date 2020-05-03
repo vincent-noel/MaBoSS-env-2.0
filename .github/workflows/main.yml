@@ -19,19 +19,18 @@ jobs:
           sudo apt-get install flex bison;
           sh make-package.sh > log;
           cat log;
-          # export maboss=``; 
           echo "::set-env name=maboss::$(cat log | tail -n 1 | cut -d' ' -f3)";
           echo "::set-env name=maboss_file::$(basename $(cat log | tail -n 1 | cut -d' ' -f3))";
           echo "::set-env name=maboss_env::$(cat log | tail -n 2 | head -n 1 | cut -d' ' -f3)";
           echo "::set-env name=maboss_env_file::$(basename $(cat log | tail -n 2 | head -n 1 | cut -d' ' -f3))";
-          echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')"
+          echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/})"
       - name: Uploading release
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/vincent-noel/MaBoSS-env-2.0/releases/${{ steps.create_release.env.BRANCH_NAME }}/assets?name=${{ env.maboss_file }}
+          upload_url: https://uploads.github.com/repos/vincent-noel/MaBoSS-env-2.0/releases/${{ env.BRANCH_NAME }}/assets
           asset_path: ${{ env.maboss }}
           asset_name: ${{ env.maboss_file }}
           asset_content_type: application/gzip
