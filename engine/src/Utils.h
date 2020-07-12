@@ -89,4 +89,8 @@ static NullBuffer null_buffer;
 
 char* maboss_strdup (const char* s);
 
+bool hasEnding (std::string const &fullString, std::string const &ending);
+
+
+
 #endif
