@@ -67,6 +67,12 @@
 #define USE_UNORDERED_MAP
 #endif
 
+
+#ifdef SBML_COMPAT
+#include <sbml/SBMLTypes.h>
+#endif
+
+
 #define MAP std::map
 
 #include <map>
@@ -553,7 +559,12 @@ public:
 
   int parse(const char* file = NULL, std::map<std::string, NodeIndex>* nodes_indexes = NULL);
   int parseExpression(const char* content = NULL, std::map<std::string, NodeIndex>* nodes_indexes = NULL);
-
+  
+  #ifdef SBML_COMPAT
+  Expression* parseASTNode(const ASTNode* tree);
+  int parseSBML(const char* file);
+  #endif
+  
   std::vector<IStateGroup*>* getIStateGroup() {
     return istate_group_list;
   }
