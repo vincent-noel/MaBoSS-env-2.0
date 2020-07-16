@@ -257,7 +257,48 @@ jobs:
             anaconda -t $CONDA_UPLOAD_TOKEN_BKMC upload -u colomoto $HOME/miniconda/conda-bld/$TRAVIS_OS_NAME-64/*.tar.bz2 --force;
           
           fi
+          
+    - stage: deploy
+      if: type != pull_request
+      name: Linux MaBoSS-SBML upload on Anaconda cloud
 
+      os: linux
+      dist: xenial
+      
+      install:
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - hash -r
+        - conda config --set always_yes yes --set changeps1 no
+        - conda update -q conda
+        - conda install conda-build
+        - conda install anaconda-client
+
+      script:
+        - conda build conda/maboss-sbml;
+        - anaconda -t $CONDA_UPLOAD_TOKEN upload -u vincent-noel $HOME/miniconda/conda-bld/$TRAVIS_OS_NAME-64/*.tar.bz2 --force;
+
+    - stage: deploy
+      if: type != pull_request
+      name: MacOSX MaBoSS-SBML upload on Anaconda cloud
+
+      os: osx
+      
+      install:
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh;
+        - bash ~/miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - hash -r
+        - conda config --set always_yes yes --set changeps1 no
+        - conda update -q conda
+        - conda install conda-build
+        - conda install anaconda-client
+
+      script:
+        - conda build conda/maboss-sbml;
+        - anaconda -t $CONDA_UPLOAD_TOKEN upload -u vincent-noel $HOME/miniconda/conda-bld/$TRAVIS_OS_NAME-64/*.tar.bz2 --force;
+          
     - stage: deploy
       if: type != pull_request
       name: Linux cMaBoSS upload on pypi
