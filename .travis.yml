@@ -333,7 +333,7 @@ jobs:
         - conda install anaconda-client
 
       script:
-        - conda build conda/maboss-sbml;
+        - conda build -c vincent-noel conda/maboss-sbml;
         - anaconda -t $CONDA_UPLOAD_TOKEN upload -u vincent-noel $HOME/miniconda/conda-bld/$TRAVIS_OS_NAME-64/*.tar.bz2 --force;
 
     - stage: deploy
@@ -353,7 +353,7 @@ jobs:
         - conda install anaconda-client
 
       script:
-        - conda build conda/maboss-sbml;
+        - conda build -c vincent-noel conda/maboss-sbml;
         - anaconda -t $CONDA_UPLOAD_TOKEN upload -u vincent-noel $HOME/miniconda/conda-bld/$TRAVIS_OS_NAME-64/*.tar.bz2 --force;
           
     - stage: deploy
