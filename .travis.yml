@@ -53,7 +53,25 @@ jobs:
         - bash -c "cd engine/tests; bash ./test-user_func.sh"
         - bash -c "cd engine/tests; bash ./test-prngs.sh"
 
+        
+    - stage: test
+      name: Linux MaBoSS-SBML tests
+      
+      os: linux
+      dist: xenial
 
+      before_install:
+        - sudo apt-get -qq update
+        - sudo apt-get install -yq libsbml5-dev
+        - sudo pip install numpy
+
+      install:
+        - bash -c "cd engine/src; make SBML_COMPAT=1 install"
+        
+      script:
+        - bash -c "cd engine/tests; bash ./test-sbml.sh"
+
+        
     - stage: test
       name: MaBoSS-server docker test
 
