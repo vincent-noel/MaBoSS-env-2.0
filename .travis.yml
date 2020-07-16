@@ -81,7 +81,7 @@ jobs:
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install flex bison;
         - pip install numpy;
         - wget https://sourceforge.net/projects/sbml/files/libsbml/5.18.0/stable/libSBML-5.18.0-core-plus-packages-src.tar.gz
-        - tar -zxvf libSBML-5.18.0-core-plus-packages-src.tar.gz
+        - tar -zxf libSBML-5.18.0-core-plus-packages-src.tar.gz
         - cd libSBML-5.18.0-Source
         - mkdir build
         - cd build
