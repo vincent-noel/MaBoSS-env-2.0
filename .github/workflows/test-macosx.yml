@@ -1,0 +1,149 @@
+name: Tests MacOSX
+
+on:
+  push:
+  pull_request:
+    
+jobs:
+
+###################################################################################################
+# MaBoSS                                                                                          #
+###################################################################################################
+  maboss:
+    name: MaBoSS
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run : |
+        brew install flex bison gcc@10
+        pip install numpy
+
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        make CXX=g++-10 install
+        make CXX=g++-10 MAXNODES=128 install
+        
+    - name: Test MaBoSS
+      run: |
+        bash -c "cd engine/tests; bash ./test-cellcycle.sh"
+        bash -c "cd engine/tests; bash ./test-ensemble.sh"
+        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        bash -c "cd engine/tests; bash ./test-server.sh"
+        bash -c "cd engine/tests; bash ./test-user_func.sh"
+        bash -c "cd engine/tests; bash ./test-prngs.sh"
+        bash -c "cd engine/tests; bash ./test-rngs.sh"
+  
+  conda_maboss:
+    name: Build Conda MaBoSS package
+    runs-on: macos-latest
+    needs: maboss
+    if: github.event_name == 'push'
+  
+    steps:
+    - uses: actions/checkout@v2
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Installing conda-build      
+      run: conda install conda-build
+
+    - name: Build MaBoSS Anaconda package
+      run: |
+        if [ $GITHUB_REPOSITORY = "vincent-noel/MaBoSS-env-2.0" ]; then
+          sed -i '' "s|sysbio-curie|vincent-noel|" conda/maboss/meta.yaml;
+          sed -i '' -e "s|v{{[[:space:]]version[[:space:]]}}|${GITHUB_REF##*/}|" conda/maboss/meta.yaml;
+          sed -i '' "s|git_rev|git_tag|" conda/maboss/meta.yaml;
+          cat conda/maboss/meta.yaml
+          conda build conda/maboss;
+        fi; 
+              
+###################################################################################################
+# cMaBoSS                                                                                         #
+###################################################################################################                        
+  cmaboss:
+    name: cMaBoSS
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Install dependencies
+      run: |
+        brew install flex bison gcc@10 python3
+        pip3 install numpy
+        
+    - name: Build cMaBoSS
+      run: |
+        cd engine/src
+        make
+        cd ../python
+        cp -r ../src .
+        python3 setup.py build_ext --inplace
+        cd ../..
+    
+    - name: Test cMaBoSS
+      run: |
+        cd engine/python
+        python3 -m unittest test
+        python3 -m unittest test_128n
+  
+  conda_cmaboss:
+    name: cMaBoSS Conda package
+    runs-on: macos-latest
+    needs: cmaboss
+    if: github.event_name == 'push'
+    steps:
+    - uses: actions/checkout@v2
+    - uses: s-weigand/setup-conda@v1
+    
+    - name: Install conda-build
+      run: conda install conda-build
+      
+    - name: Build cMaBoSS Anaconda package
+      run: |
+        if [ $GITHUB_REPOSITORY = "vincent-noel/MaBoSS-env-2.0" ]; then
+          sed -i '' "s|sysbio-curie|vincent-noel|" conda/cmaboss/meta.yaml;
+          sed -i '' -e "s|release|${GITHUB_REF##*/}|" conda/cmaboss/meta.yaml;
+          sed -i '' "s|git_rev|git_tag|" conda/cmaboss/meta.yaml;
+          cat conda/cmaboss/meta.yaml
+          $CONDA/bin/conda build conda/cmaboss;      
+        fi; 
+              
+  cmaboss_pypi:
+    name: cMaBoSS PyPi package
+    runs-on: macos-latest
+    needs: cmaboss
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        python:
+          - 3.5.10
+          - 3.6.12
+          - 3.7.9
+          - 3.8.6
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup python env
+      uses: gabrielfalcao/pyenv-action@v7
+      with:
+        default: "${{ matrix.python }}"
+        command: |
+          pip install -U pip  # upgrade pip after installing python
+          
+    - name: Install python dependencies
+      run: pip install twine wheel numpy
+
+    - name: Compile MaBoSS
+      run: |
+        cd engine/src; make
+        cd ../python; cp -r ../src .
+        cd ../..
+        
+    - name: Build cMaBoSS
+      run: |
+        cd engine/python
+        pip wheel . -w wheelhouse
