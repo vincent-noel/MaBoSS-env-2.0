@@ -16,11 +16,14 @@ Contact: [maboss.bkmc@gmail.com](mailto://maboss.bkmc@gmail.com)
 Web Site: [https://maboss.curie.fr](https://maboss.curie.fr)
 
 ### Package Contents
-MaBoSS-env-2.0 is composed of:
-- MaBoSS engine 2.0: C++ core program simulating continuous/discrete time Markov processes, applied on a Boolean network.
-- MaBoSS tools 2.0: perl and python scripts using MaBoSS engine 2.0
-- cMaBoSS: python bindings using Python C API.
-
+This particular branches show an example of a timing test of the parallelization of MaBoSS
+```
+git clone https://github.com/vincent-noel/MaBoSS-env-2.0
+cd MaBoSS-env-2.0
+git checkout test/parallelization
+sudo apt-get install make gcc flex bison
+bash test_parallelization.sh
+```
 ### Tested platforms
 - Linux: Ubuntu (Ubuntu 4.3.2-1ubuntu11 and higher), RedHat and CentOS
 - MacOS X x86
@@ -33,68 +36,11 @@ MaBoSS-env-2.0 is composed of:
 - bison: version 2.3 or higher
 - flex: version 2.5.35 or higher
 - cygwin is needed on Windows
-
-##### MaBoSS tools:
-
-- perl
-- python3
-- python3 modules: matplotlib (matplotlib.cm, matplotlib.gridspec, matplotlib.patches, matplotlib.pylab), numpy, pandas, seaborn, xlsxwriter
-
-To check requirements on a Unix platform (Linux, MacOS X), you can launch the script check-requirements.sh as follows:
-./check-requirements
-
-MaBoSS engine requirements are checked first.
-
-The output must be:
-
-Checking MaBoSS engine 2.0 requirements...
-
-  flex: OK
-  bison: OK
-  gcc: OK
-  g++: OK
-
-MaBoSS engine 2.0 requirements: OK
-
-If an error is displayed, you have to fix it, as neither the engine, nor the tools will be able to be launched.
-
-MaBoSS tools requirements are then checked.
-
-The most frequent errors are that the following python3 modules are missing: matplotlib, numpy, pandas, seaborn, xlsxwriter.
-
-You must install the missing modules if you want to use: MBSSf_DrugSim.py, MBSS_PieChart.py, MBSS_PrepareProjectFilePieChart.py, MBSS_PrepareProjectFileTrajectoryFig.py or MBSS_TrajectoryFig.py.
-
-### Binary Distribution
-
-To avoid installing compilation tools, we provide binary versions for linux x86, MacOS X x86 and Windows x86:
-- linux   : binaries/linux-x86/MaBoSS
-- MacOS X : binaries/macos-x86/MaBoSS
-- Windows : binaries/win-x86/MaBoSS.exe
-
-Important notes on the Windows version:
-- to execute MaBoSS.exe, cygwin must be installed (http://www.cygwin.com/)
-- because of the cygwin emulation, the windows version is very slow (about 4 times slower than the linux and Mac OS versions). We urge you to run MaBoSS on linux or Mac OS X if possible.
-
-All these binary versions are provided "as is", they may not work on your OS. In such a case, you need to compile MaBoSS.
-
-If you want to use the binary version:
-
-  1. your have first to test it:
-  launch ./binaries/YOUR_OS/MaBoSS --version, for instance, on a Linux OS:
-  ./binaries/linux-x86/MaBoSS --version
-  if everything is ok, you should see:
-  MaBoSS version 2.0 [networks up to 64 nodes]
-
-  2. copy this binary to engine/pub, for instance, on a Linux OS:
-  cp binaries/linux-x86/MaBoSS engine/pub/
-
-  3. then, you can skip the following section "Engine Compilation"
-
 ### Engine Compilation
-
-cd engine/src
-make install
-
+```
+  cd engine/src
+  make install
+```
 The executable file will be located in engine/pub and is named MaBoSS.
 
 This compiled version supports up to 64 nodes per network.
