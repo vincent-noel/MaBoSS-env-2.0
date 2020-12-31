@@ -51,13 +51,7 @@ jobs:
       
     - name: Build Anaconda package
       run: |
-        if [ $GITHUB_REPOSITORY = "vincent-noel/MaBoSS-env-2.0" ]; then
-          sed -i "s|sysbio-curie|vincent-noel|" conda/maboss/meta.yaml;
-          sed -ie "s|v{{\sversion\s}}|${GITHUB_REF##*/}|" conda/maboss/meta.yaml;
-          sed -i "s|git_rev|git_tag|" conda/maboss/meta.yaml;
-          cat conda/maboss/meta.yaml
-          conda build conda/maboss
-        fi; 
+        conda build conda/maboss 
     
   test_docker:
     name: Docker MaBoSS Server
