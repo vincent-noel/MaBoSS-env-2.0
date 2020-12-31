@@ -133,13 +133,9 @@ jobs:
       
     - name: Build cMaBoSS Anaconda package
       run: |
-        if [ $GITHUB_REPOSITORY = "vincent-noel/MaBoSS-env-2.0" ]; then
-          sed -i '' "s|sysbio-curie|vincent-noel|" conda/cmaboss/meta.yaml;
-          sed -i '' -e "s|release|${GITHUB_REF##*/}|" conda/cmaboss/meta.yaml;
-          sed -i '' "s|git_rev|git_tag|" conda/cmaboss/meta.yaml;
-          cat conda/cmaboss/meta.yaml
-          $CONDA/bin/conda build conda/cmaboss;      
-        fi; 
+        $CONDA/bin/conda build conda/cmaboss;      
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/local/miniconda/conda-bld/noarch/*.tar.bz2 --force;
+ 
               
   cmaboss_pypi:
     name: cMaBoSS PyPi package
@@ -173,6 +169,12 @@ jobs:
         cd ../..
         
     - name: Build cMaBoSS
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
         cd engine/python
         pip wheel . -w wheelhouse
+        twine upload --skip-existing wheelhouse/*
+
+        

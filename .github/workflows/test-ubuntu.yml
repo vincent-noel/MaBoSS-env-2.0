@@ -165,13 +165,8 @@ jobs:
       
     - name: Build cMaBoSS Anaconda package
       run: |
-        if [ $GITHUB_REPOSITORY = "vincent-noel/MaBoSS-env-2.0" ]; then
-          sed -i "s|sysbio-curie|vincent-noel|" conda/cmaboss/meta.yaml;
-          sed -ie "s|release|${GITHUB_REF##*/}|" conda/cmaboss/meta.yaml;
-          sed -i "s|git_rev|git_tag|" conda/cmaboss/meta.yaml;
-          cat conda/cmaboss/meta.yaml
-          conda build conda/cmaboss;
-        fi; 
+        conda build conda/cmaboss;
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
         
   cmaboss_manylinux1:
     name: cMaBoSS manylinux1 wheel
@@ -190,10 +185,14 @@ jobs:
         pip install twine
         
     - name: Build cMaBoSS manylinux1_x86_64
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
         cd engine/python
         docker run --rm -e PLAT=manylinux1_x86_64 -v `pwd`:/io quay.io/pypa/manylinux1_x86_64 /io/build-wheels.sh
         ls
+        twine upload --skip-existing wheelhouse/*
         
   cmaboss_manylinux2010:
     name: cMaBoSS manylinux2010 wheel
@@ -212,10 +211,14 @@ jobs:
         pip install twine
         
     - name: Build cMaBoSS manylinux2010_x86_64
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
         cd engine/python
         docker run --rm -e PLAT=manylinux2010_x86_64 -v `pwd`:/io quay.io/pypa/manylinux2010_x86_64 /io/build-wheels.sh
         ls 
+        twine upload --skip-existing wheelhouse/*
         
   cmaboss_manylinux2014:
     name: cMaBoSS manylinux2014 wheel
@@ -234,7 +237,11 @@ jobs:
         pip install twine
         
     - name: Build cMaBoSS manylinux2014_x86_64
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
         cd engine/python
         docker run --rm -e PLAT=manylinux2014_x86_64 -v `pwd`:/io quay.io/pypa/manylinux2014_x86_64 /io/build-wheels.sh
         ls
+        twine upload --skip-existing wheelhouse/*
