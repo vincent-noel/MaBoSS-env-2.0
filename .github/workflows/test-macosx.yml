@@ -81,6 +81,9 @@ jobs:
 
     - name: Build MaBoSS Anaconda package
       run: |
+        sudo ls /Applications/Xcode*
+        sudo xcode-select -s /Applications/Xcode_11.7.app/Contents/Developer
+        brew reinstall llvm
         conda build conda/maboss; 
               
 ###################################################################################################
@@ -127,6 +130,9 @@ jobs:
       
     - name: Build cMaBoSS Anaconda package
       run: |
+        sudo ls /Applications/Xcode*
+        sudo xcode-select -s /Applications/Xcode_11.7.app/Contents/Developer
+        brew reinstall llvm
         $CONDA/bin/conda build conda/cmaboss;      
         anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/local/miniconda/conda-bld/noarch/*.tar.bz2 --force;
  
