@@ -160,7 +160,7 @@ jobs:
     - name: Build cMaBoSS Anaconda package
       run: |
         conda build conda/cmaboss;
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/linux-64/*.tar.bz2 --force;
         
   cmaboss_manylinux1:
     name: cMaBoSS manylinux1 wheel
