@@ -175,6 +175,6 @@ jobs:
       run: |
         cd engine/python
         pip wheel . -w wheelhouse
-        python -m twine upload --skip-existing wheelhouse/*
+        python -m twine upload --skip-existing wheelhouse/cmaboss*
 
         
