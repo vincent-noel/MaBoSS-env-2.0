@@ -180,15 +180,14 @@ jobs:
         cd ../..
         
     - name: Build cMaBoSS
-      run: |
-        cd engine/python
-        pip wheel . -w wheelhouse
-        
-    - name: Upload cMaBoSS to Pypi
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
+        cd engine/python
+        pip wheel . -w wheelhouse
+        ls
+        ls wheelhouse
         python -m twine upload --skip-existing wheelhouse/cmaboss*
-
+      
         
