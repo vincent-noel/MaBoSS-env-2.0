@@ -77,8 +77,8 @@ jobs:
     - uses: actions/checkout@v2
     - uses: s-weigand/setup-conda@v1
 
-    - name: Installing conda-build      
-      run: conda install conda-build
+    - name: Installing conda-build and anaconda client
+      run: conda install conda-build anaconda-client
 
     - name: Downgrading XCode to 11.7
       run: |
