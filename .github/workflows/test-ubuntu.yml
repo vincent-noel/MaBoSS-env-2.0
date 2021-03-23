@@ -148,6 +148,7 @@ jobs:
         bash -c "cd engine/tests; bash ./test-prngs.sh"
         bash -c "cd engine/tests; bash ./test-rngs.sh"
         bash -c "cd engine/tests; bash ./test-sbml.sh"
+        bash -c "cd engine/tests; bash ./test-popmaboss.sh"
         bash -c "cd engine/tests; bash ./test-user_func.sh"
   
   maboss_mpi:
