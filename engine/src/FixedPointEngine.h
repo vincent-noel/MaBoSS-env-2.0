@@ -36,52 +36,51 @@
 #############################################################################
 
    Module:
-     MaBEstEngine.h
+     FixedPointEngine.h
 
    Authors:
-     Eric Viara <viara@sysra.com>
-     Gautier Stoll <gautier.stoll@curie.fr>
-     Vincent Noël <vincent.noel@curie.fr>
-
+     Vincent Noel <contact@vincent-noel.fr>
+ 
    Date:
-     January-March 2011
+     March 2021
 */
 
-#ifndef _MABESTENGINE_H_
-#define _MABESTENGINE_H_
+#ifndef _FIXEDPOINTENGINE_H_
+#define _FIXEDPOINTENGINE_H_
 
 #include <string>
 #include <map>
 #include <vector>
 #include <assert.h>
 
-#include "ProbTrajEngine.h"
+#include "MetaEngine.h"
 #include "BooleanNetwork.h"
-#include "Cumulator.h"
-#include "RandomGenerator.h"
+// #include "Cumulator.h"
+// #include "RandomGenerator.h"
 #include "RunConfig.h"
+#include "FixedPointDisplayer.h"
 
-struct ArgWrapper;
+struct EnsembleArgWrapper;
 
-class MaBEstEngine : public ProbTrajEngine {
+class FixedPointEngine : public MetaEngine {
 
-  std::vector<ArgWrapper*> arg_wrapper_v;
-  NodeIndex getTargetNode(RandomGenerator* random_generator, const MAP<NodeIndex, double>& nodeTransitionRates, double total_rate) const;
-  double computeTH(const MAP<NodeIndex, double>& nodeTransitionRates, double total_rate) const;
-  void epilogue();
-  static void* threadWrapper(void *arg);
-  void runThread(Cumulator* cumulator, unsigned int start_count_thread, unsigned int sample_count_thread, RandomGeneratorFactory* randgen_factory, int seed, STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map, std::ostream* output_traj);
-  // STATE_MAP<NetworkState_Impl, unsigned int>* mergeFixpointMaps();
+protected:
+
+  STATE_MAP<NetworkState_Impl, unsigned int> fixpoints;
+  std::vector<STATE_MAP<NetworkState_Impl, unsigned int>*> fixpoint_map_v;
+  STATE_MAP<NetworkState_Impl, unsigned int>* mergeFixpointMaps();
 
 public:
-  static const std::string VERSION;
-  
-  MaBEstEngine(Network* network, RunConfig* runconfig);
 
-  void run(std::ostream* output_traj);
-  void displayRunStats(std::ostream& os, time_t start_time, time_t end_time) const;
-  
-  ~MaBEstEngine();
+  FixedPointEngine(Network * network, RunConfig* runconfig) : MetaEngine(network, runconfig) {}
+
+  bool converges() const {return fixpoints.size() > 0;}
+  const STATE_MAP<NetworkState_Impl, unsigned int>& getFixpoints() const {return fixpoints;}
+  const std::map<unsigned int, std::pair<NetworkState, double> > getFixPointsDists() const;
+
+  void displayFixpoints(std::ostream& output_fp, bool hexfloat = false) const;
+  void displayFixpoints(FixedPointDisplayer* displayer) const;
+
 };
 
 #endif
