@@ -566,7 +566,7 @@ jobs:
     - name: Build cMaBoSS
       run: |
         cd engine/src
-        make
+        make grammars
         cd ../python
         cp -r ../src cmaboss
         pip3 install .
@@ -818,7 +818,7 @@ jobs:
     
     - name: Compile MaBoSS
       run: |
-        cd engine/src; make
+        cd engine/src; make grammars
         cd ../python; cp -r ../src cmaboss
         cd ../..
         
@@ -847,7 +847,7 @@ jobs:
     
     - name: Compile MaBoSS
       run: |
-        cd engine/src; make
+        cd engine/src; make grammars
         cd ../python; cp -r ../src cmaboss
         cd ../..
         
@@ -876,7 +876,7 @@ jobs:
     
     - name: Compile MaBoSS
       run: |
-        cd engine/src; make
+        cd engine/src; make grammars
         cd ../python; cp -r ../src cmaboss
         cd ../..
         
