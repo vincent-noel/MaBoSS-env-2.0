@@ -674,7 +674,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew install flex bison python3 libxml2 cmake
-        pip3 install numpy wheel delocate
+        pip3 install numpy wheel delocate pandas
         
     - name: Get cmake version
       id: get-cmake-version
