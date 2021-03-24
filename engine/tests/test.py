@@ -89,3 +89,9 @@ class TestCMaBoSS(TestCase):
         self.assertEqual(sim.str_bnd().split("{")[0].split("node ")[1].strip(), "S_26")
         sim = cmaboss.MaBoSSSim("../examples/sbml/Cohen.sbml", use_sbml_names=True)
         self.assertEqual(sim.str_bnd().split("{")[0].split("node ")[1].strip(), "CTNNB1")
+                
+                
+    def test_popmaboss(self):
+        sim = cmaboss.PopMaBoSSSim("../examples/popmaboss/Fork.bnd", "../examples/popmaboss/Fork.cfg")
+        res = sim.run()
+        print(res.get_fp_table())
