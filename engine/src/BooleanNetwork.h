@@ -1040,6 +1040,8 @@ PopNetworkState& operator=(const PopNetworkState &p ) {
   
   unsigned int count(Expression * expr) const;
   
+  std::string getName(Network * network, const std::string& sep=" -- ") const;
+
   void displayOneLine(std::ostream& os, Network* network, const std::string& sep = " -- ") const;
   void displayJSON(std::ostream& os, Network* network, const std::string& sep = " -- ") const;
 
