@@ -1,5 +1,5 @@
 cd engine/src
-make 
+make grammars
 cd ../python
 cp -r ../src cmaboss
 $PYTHON setup.py install
