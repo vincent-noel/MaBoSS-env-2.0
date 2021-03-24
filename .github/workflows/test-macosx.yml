@@ -295,7 +295,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew install flex bison gcc@10 python3 libxml2 cmake
-        pip3 install numpy
+        pip3 install numpy pandas
         
     - name: Get cmake version
       id: get-cmake-version
