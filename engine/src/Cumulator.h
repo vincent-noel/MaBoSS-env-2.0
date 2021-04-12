@@ -175,7 +175,7 @@ class Cumulator {
     Iterator iterator() const {return Iterator(*this);}
   };
 
-#ifdef HD_BUG
+// #ifdef HD_BUG
   class HDCumulMap {
     STATE_MAP<NetworkState_Impl, double> mp;
 
@@ -239,7 +239,7 @@ class Cumulator {
     Iterator iterator() {return Iterator(*this);}
     Iterator iterator() const {return Iterator(*this);}
   };
-#endif
+// #endif
   RunConfig* runconfig;
   double time_tick;
   unsigned int sample_count;
@@ -255,9 +255,8 @@ class Cumulator {
   int max_tick_index;
   NetworkState_Impl output_mask;
   std::vector<CumulMap> cumul_map_v;
-#ifdef HD_BUG
+// #ifdef HD_BUG
   std::vector<HDCumulMap> hd_cumul_map_v;
-#endif
   unsigned int statdist_trajcount;
   unsigned int refnode_count;
   NetworkState_Impl refnode_mask;
@@ -281,7 +280,7 @@ class Cumulator {
     return cumul_map_v[nn];
   }
 
-#ifdef HD_BUG
+// #ifdef HD_BUG
   HDCumulMap& get_hd_map() {
     assert((size_t)tick_index < hd_cumul_map_v.size());
     return hd_cumul_map_v[tick_index];
@@ -296,7 +295,7 @@ class Cumulator {
     assert(nn < hd_cumul_map_v.size());
     return hd_cumul_map_v[nn];
   }
-#endif
+// #endif
 
   double cumultime(int at_tick_index = -1) {
     if (at_tick_index < 0) {
@@ -319,10 +318,10 @@ class Cumulator {
     tick_completed = false;
     CumulMap& mp = get_map();
     mp.incr(state, tm_slice, TH);
-#ifdef HD_BUG
+// #ifdef HD_BUG
     HDCumulMap& hd_mp = get_hd_map();
     hd_mp.incr(fullstate, tm_slice);
-#endif
+// #endif
 
     STATE_MAP<NetworkState_Impl, LastTickValue>::iterator last_tick_iter = last_tick_map.find(state);
     if (last_tick_iter == last_tick_map.end()) {
@@ -363,9 +362,9 @@ public:
     max_size = (int)(max_time/time_tick)+2;
     max_tick_index = max_size;
     cumul_map_v.resize(max_size);
-#ifdef HD_BUG
+// #ifdef HD_BUG
     hd_cumul_map_v.resize(max_size);
-#endif
+// #endif
     if (COMPUTE_ERRORS) {
       TH_square_v.resize(max_size);
       for (int nn = 0; nn < max_size; ++nn) {
