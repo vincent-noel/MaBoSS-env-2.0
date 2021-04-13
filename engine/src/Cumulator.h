@@ -70,8 +70,6 @@
 
 static bool COMPUTE_ERRORS = true;
 
-#define HD_BUG
-
 #include "RunConfig.h"
 #include "ProbaDist.h"
 #include "RunConfig.h"
@@ -179,7 +177,6 @@ class Cumulator {
     Iterator iterator() const {return Iterator(*this);}
   };
 
-// #ifdef HD_BUG
   class HDCumulMap {
     typename STATE_MAP<S, double> mp;
 
@@ -259,7 +256,6 @@ class Cumulator {
   int max_tick_index;
   NetworkState output_mask;
   std::vector<CumulMap> cumul_map_v;
-// #ifdef HD_BUG
   std::vector<HDCumulMap> hd_cumul_map_v;
   unsigned int statdist_trajcount;
   unsigned int refnode_count;
@@ -284,7 +280,6 @@ class Cumulator {
     return cumul_map_v[nn];
   }
 
-// #ifdef HD_BUG
   HDCumulMap& get_hd_map() {
     assert((size_t)tick_index < hd_cumul_map_v.size());
     return hd_cumul_map_v[tick_index];
@@ -299,7 +294,6 @@ class Cumulator {
     assert(nn < hd_cumul_map_v.size());
     return hd_cumul_map_v[nn];
   }
-// #endif
 
   double cumultime(int at_tick_index = -1) {
     if (at_tick_index < 0) {
@@ -322,10 +316,9 @@ class Cumulator {
     tick_completed = false;
     CumulMap& mp = get_map();
     mp.incr(state, tm_slice, TH);
-// #ifdef HD_BUG
+
     HDCumulMap& hd_mp = get_hd_map();
     hd_mp.incr(fullstate, tm_slice);
-// #endif
 
     typename STATE_MAP<S, LastTickValue>::iterator last_tick_iter = last_tick_map.find(state);
     if (last_tick_iter == last_tick_map.end()) {
@@ -372,7 +365,7 @@ class Cumulator {
     }
 
   }
-// #ifdef HD_BUG
+
   void add(unsigned int where, const HDCumulMap& add_hd_cumul_map) 
   {
     HDCumulMap& to_hd_cumul_map = get_hd_map(where);
@@ -390,32 +383,17 @@ class Cumulator {
     }
 
   }
-// #endif
   
 public:
 
   Cumulator(RunConfig* runconfig, double time_tick, double max_time, unsigned int sample_count, unsigned int statdist_trajcount) :
     runconfig(runconfig), time_tick(time_tick), sample_count(sample_count), sample_num(0), last_tm(0.), tick_index(0), statdist_trajcount(statdist_trajcount) {
-#ifdef USE_STATIC_BITSET
     output_mask.set();
     refnode_mask.reset();
-#elif defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
-    // EV: 2020-10-23
-    //output_mask.resize(MAXNODES);
-    output_mask.resize(Network::getMaxNodeSize());
-    output_mask.set();
-    refnode_mask.resize(Network::getMaxNodeSize());
-    refnode_mask.reset();
-#else
-    output_mask = ~0ULL;
-    refnode_mask = 0ULL;
-#endif
     max_size = (int)(max_time/time_tick)+2;
     max_tick_index = max_size;
     cumul_map_v.resize(max_size);
-// #ifdef HD_BUG
     hd_cumul_map_v.resize(max_size);
-// #endif
     if (COMPUTE_ERRORS) {
       TH_square_v.resize(max_size);
       for (int nn = 0; nn < max_size; ++nn) {
@@ -684,7 +662,6 @@ public:
     }
 
     os_asymptprob << '\t';
-    // NetworkState network_state(state);
     state.displayOneLine(os_asymptprob, network);
 
     os_asymptprob << '\n';
@@ -844,9 +821,7 @@ public:
     }
 
     ret_cumul->cumul_map_v.resize(min_cumul_size);
-  // #ifdef HD_BUG
     ret_cumul->hd_cumul_map_v.resize(min_cumul_size);
-  // #endif
     ret_cumul->max_tick_index = ret_cumul->tick_index = min_tick_index_size;
 
     begin = cumulator_v.begin();
@@ -855,9 +830,7 @@ public:
       Cumulator* cumulator = *begin;
       for (unsigned int nn = 0; nn < min_cumul_size; ++nn) {
         ret_cumul->add(nn, cumulator->cumul_map_v[nn]);
-  // #ifdef HD_BUG
         ret_cumul->add(nn, cumulator->hd_cumul_map_v[nn]);
-  // #endif
         ret_cumul->TH_square_v[nn] += cumulator->TH_square_v[nn];
       }
       unsigned int proba_dist_size = cumulator->proba_dist_v.size();
