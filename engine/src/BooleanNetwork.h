@@ -91,9 +91,7 @@
 #include <iostream>
 #include <strings.h>
 #include <string.h>
-#ifdef USE_BOOST_BITSET
-#include <boost/dynamic_bitset.hpp>
-#elif defined(USE_STATIC_BITSET)
+#ifdef USE_STATIC_BITSET
 #include <bitset>
 #elif defined(USE_DYNAMIC_BITSET)
 #include "MBDynBitset.h"
@@ -162,17 +160,11 @@ typedef unsigned int NodeIndex;
 typedef bool NodeState; // for now... could be a class
 typedef unsigned int SymbolIndex;
 
-#ifdef USE_BOOST_BITSET
-
-//typedef boost::dynamic_bitset<uint8_t> NetworkState_Impl;
-typedef boost::dynamic_bitset<> NetworkState_Impl;
-
-#elif defined(USE_STATIC_BITSET)
+#ifdef USE_STATIC_BITSET
 
 #ifdef USE_UNORDERED_MAP
 typedef std::bitset<MAXNODES> NetworkState_Impl;
 
-//#ifndef HAS_BOOST_UNORDERED_MAP
 namespace std {
   template <> struct HASH_STRUCT<bitset<MAXNODES> > : public std::unary_function<bitset<MAXNODES>, size_t>
   {
@@ -286,7 +278,7 @@ class Node {
 
   void setIndex(NodeIndex new_index) {
     index = new_index;
-#if !defined(USE_STATIC_BITSET) && !defined(USE_BOOST_BITSET) && !defined(USE_DYNAMIC_BITSET)
+#if !defined(USE_STATIC_BITSET) && !defined(USE_DYNAMIC_BITSET)
     node_bit = 1ULL << new_index;
 #endif
   }
@@ -414,7 +406,7 @@ class Node {
 
   NodeIndex getIndex() const {return index;}
 
-#if !defined(USE_STATIC_BITSET) && !defined(USE_BOOST_BITSET) && !defined(USE_DYNAMIC_BITSET)
+#if !defined(USE_STATIC_BITSET) && !defined(USE_DYNAMIC_BITSET)
   NetworkState_Impl getNodeBit() const {return node_bit;}
 #endif
 
@@ -760,7 +752,7 @@ class PopNetwork : public Network {
 class NetworkState {
   NetworkState_Impl state;
 
-#if !defined(USE_STATIC_BITSET) && !defined(USE_BOOST_BITSET) && !defined(USE_DYNAMIC_BITSET)
+#if !defined(USE_STATIC_BITSET) && !defined(USE_DYNAMIC_BITSET)
   static NetworkState_Impl nodeBit(const Node* node) {
     return node->getNodeBit();
   }
@@ -789,7 +781,7 @@ public:
 
 #ifdef USE_STATIC_BITSET
   NetworkState() { }
-#elif defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
+#elif defined(USE_DYNAMIC_BITSET)
   // EV: 2020-10-23
   //NetworkState() : state(MAXNODES) { }
   NetworkState() : state(Network::getMaxNodeSize()) { }
@@ -802,7 +794,7 @@ public:
   void set() {
 #ifdef USE_STATIC_BITSET
     state.set();
-#elif defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
+#elif defined(USE_DYNAMIC_BITSET)
     // EV: 2020-10-23
     //output_mask.resize(MAXNODES);
     state.resize(Network::getMaxNodeSize());
@@ -826,7 +818,7 @@ public:
   }
 
   NodeState getNodeState(const Node* node) const {
-#if defined(USE_STATIC_BITSET) || defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
+#if defined(USE_STATIC_BITSET) || defined(USE_DYNAMIC_BITSET)
     return state.test(node->getIndex());
 #else
     return state & nodeBit(node);
@@ -834,7 +826,7 @@ public:
   }
 
   void setNodeState(const Node* node, NodeState node_state) {
-#if defined(USE_STATIC_BITSET) || defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
+#if defined(USE_STATIC_BITSET) || defined(USE_DYNAMIC_BITSET)
     state.set(node->getIndex(), node_state);
 #else
     if (node_state) {
@@ -846,7 +838,7 @@ public:
   }
 
   void flipState(const Node* node) {
-#if defined(USE_STATIC_BITSET) || defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
+#if defined(USE_STATIC_BITSET) || defined(USE_DYNAMIC_BITSET)
     //state.set(node->getIndex(), !state.test(node->getIndex()));
     state.flip(node->getIndex());
 #else
@@ -879,7 +871,7 @@ public:
   unsigned int hamming(Network* network, const NetworkState& state) const;
 
   static NodeState getState(Node* node, const NetworkState_Impl &state) {
-#if defined(USE_STATIC_BITSET) || defined(USE_BOOST_BITSET) || defined(USE_DYNAMIC_BITSET)
+#if defined(USE_STATIC_BITSET) || defined(USE_DYNAMIC_BITSET)
     return state.test(node->getIndex());
 #else
     return state & nodeBit(node);
