@@ -77,9 +77,9 @@ static bool COMPUTE_ERRORS = true;
 #include "ProbTrajDisplayer.h"
 
 class Network;
-template <class S> class ProbTrajDisplayer;
+template <typename S> class ProbTrajDisplayer;
 
-template <class S>
+template <typename S>
 class Cumulator {
 
   struct TickValue {
@@ -106,7 +106,7 @@ class Cumulator {
     }
 
     void incr(const S& state, double tm_slice, double TH) {
-      typename STATE_MAP<S, TickValue>::iterator iter = mp.find(state);
+      auto iter = mp.find(state);
       if (iter == mp.end()) {
 	mp[state] = TickValue(tm_slice, tm_slice * TH);
       } else {
@@ -116,13 +116,13 @@ class Cumulator {
     }
 
     void cumulTMSliceSquare(const S& state, double tm_slice) {
-      typename STATE_MAP<S, TickValue>::iterator iter = mp.find(state);
+      auto iter = mp.find(state);
       assert(iter != mp.end());
       (*iter).second.tm_slice_square += tm_slice * tm_slice;
     }
     
     void add(const S& state, const TickValue& tick_value) {
-      typename STATE_MAP<S, TickValue>::iterator iter = mp.find(state);
+      auto iter = mp.find(state);
       if (iter == mp.end()) {
 	mp[state] = tick_value;
       } else {
@@ -182,7 +182,7 @@ class Cumulator {
 
   public:
     void incr(const S& fullstate, double tm_slice) {
-      typename STATE_MAP<S, double>::iterator iter = mp.find(fullstate);
+      auto iter = mp.find(fullstate);
       if (iter == mp.end()) {
 	mp[fullstate] = tm_slice;
       } else {
@@ -191,7 +191,7 @@ class Cumulator {
     }
 
     void add(const S& fullstate, double tm_slice) {
-      typename STATE_MAP<S, double>::iterator iter = mp.find(fullstate);
+      auto iter = mp.find(fullstate);
       if (iter == mp.end()) {
 	mp[fullstate] = tm_slice;
       } else {
@@ -240,7 +240,7 @@ class Cumulator {
     Iterator iterator() {return Iterator(*this);}
     Iterator iterator() const {return Iterator(*this);}
   };
-// #endif
+
   RunConfig* runconfig;
   double time_tick;
   unsigned int sample_count;
@@ -320,7 +320,7 @@ class Cumulator {
     HDCumulMap& hd_mp = get_hd_map();
     hd_mp.incr(fullstate, tm_slice);
 
-    typename STATE_MAP<S, LastTickValue>::iterator last_tick_iter = last_tick_map.find(state);
+    auto last_tick_iter = last_tick_map.find(state);
     if (last_tick_iter == last_tick_map.end()) {
       last_tick_map[state] = LastTickValue(tm_slice, tm_slice * TH);
     } else {
@@ -335,7 +335,7 @@ class Cumulator {
     // check that for each tick (except the last one), the sigma of each map == 1.
     for (int nn = 0; nn < max_tick_index; ++nn) {
     const CumulMap& mp = get_map(nn);
-    typename CumulMap::Iterator iter = mp.iterator();
+    auto iter = mp.iterator();
     double sum = 0.;
     while (iter.hasNext()) {
       TickValue tick_value;
@@ -352,7 +352,7 @@ class Cumulator {
   {
     CumulMap& to_cumul_map = get_map(where);
 
-    typename CumulMap::Iterator iter = add_cumul_map.iterator();
+    auto iter = add_cumul_map.iterator();
     while (iter.hasNext()) {
       TickValue tick_value;
   #ifdef USE_NEXT_OPT
@@ -370,7 +370,7 @@ class Cumulator {
   {
     HDCumulMap& to_hd_cumul_map = get_hd_map(where);
 
-    typename HDCumulMap::Iterator iter = add_hd_cumul_map.iterator();
+    auto iter = add_hd_cumul_map.iterator();
     while (iter.hasNext()) {
       double tm_slice;
   #ifdef USE_NEXT_OPT
@@ -418,8 +418,8 @@ public:
 
   void next() {
     if (tick_index < max_size) {
-      typename STATE_MAP<S, LastTickValue>::iterator begin = last_tick_map.begin();
-      typename STATE_MAP<S, LastTickValue>::iterator end = last_tick_map.end();
+      auto begin = last_tick_map.begin();
+      auto end = last_tick_map.end();
       CumulMap& mp = get_map();
       double TH = 0.0;
       while (begin != end) {
@@ -492,7 +492,7 @@ public:
       displayer->beginTimeTick(nn*time_tick);
       // TH
       const CumulMap& mp = get_map(nn);
-      typename CumulMap::Iterator iter = mp.iterator();
+      auto iter = mp.iterator();
       displayer->setTH(TH_v[nn]);
 
       // ErrorTH
@@ -519,7 +519,7 @@ public:
       // HD
       const MAP<unsigned int, double>& hd_m = HD_v[nn];
       for (unsigned int hd = 0; hd <= refnode_count; ++hd) { 
-        MAP<unsigned int, double>::const_iterator hd_m_iter = hd_m.find(hd);
+        auto hd_m_iter = hd_m.find(hd);
         if (hd_m_iter != hd_m.end()) {
     displayer->setHD(hd, hd_m_iter->second);
         } else {
@@ -631,8 +631,7 @@ public:
   #endif
     // TH
     const CumulMap &mp = get_map(nn);
-    typename CumulMap::Iterator iter = mp.iterator();
-
+    auto iter = mp.iterator();
 
     while (iter.hasNext())
     {
@@ -679,16 +678,16 @@ public:
 
     for (int nn=0; nn < getMaxTickIndex(); nn++) {
       const CumulMap& mp = get_map(nn);
-      typename CumulMap::Iterator iter = mp.iterator();
+      auto iter = mp.iterator();
 
       while (iter.hasNext()) {
         TickValue tick_value;
-        //#ifdef USE_NEXT_OPT
-        //const S& state = iter.next2(tick_value);
-        //#else
+  #ifdef USE_NEXT_OPT
+        const S& state = iter.next2(tick_value);
+  #else
         S state;
         iter.next(state, tick_value);
-        //#endif
+  #endif
         result_states.insert(state);
       }
     }
@@ -701,16 +700,16 @@ public:
     std::vector<S> result_states;
 
       const CumulMap& mp = get_map(getMaxTickIndex()-1);
-      typename CumulMap::Iterator iter = mp.iterator();
+      auto iter = mp.iterator();
 
       while (iter.hasNext()) {
         TickValue tick_value;
-        //#ifdef USE_NEXT_OPT
-        //const S& state = iter.next2(tick_value);
-        //#else
+  #ifdef USE_NEXT_OPT
+        const S& state = iter.next2(tick_value);
+  #else
         S state;
         iter.next(state, tick_value);
-        //#endif
+  #endif
         result_states.push_back(state);
       }
 
@@ -735,16 +734,16 @@ public:
 
     for (int nn=0; nn < getMaxTickIndex(); nn++) {
       const CumulMap& mp = get_map(nn);
-      typename CumulMap::Iterator iter = mp.iterator();
+      auto iter = mp.iterator();
 
       while (iter.hasNext()) {
         TickValue tick_value;
-        //#ifdef USE_NEXT_OPT
-        //const S& state = iter.next2(tick_value);
-        //#else
+  #ifdef USE_NEXT_OPT
+        const S& state = iter.next2(tick_value);
+  #else
         S state;
         iter.next(state, tick_value);
-        //#endif
+  #endif
         
         void* ptr = PyArray_GETPTR2(result, nn, pos_states[state]);
         PyArray_SETITEM(
@@ -786,16 +785,16 @@ public:
     double ratio = time_tick*sample_count;
 
     const CumulMap& mp = get_map(getMaxTickIndex()-1);
-    typename CumulMap::Iterator iter = mp.iterator();
+    auto iter = mp.iterator();
 
     while (iter.hasNext()) {
       TickValue tick_value;
-      //#ifdef USE_NEXT_OPT
+  #ifdef USE_NEXT_OPT
       const S& state = iter.next2(tick_value);
-      //#else
-      //S state;
-      //iter.next(state, tick_value);
-      //#endif
+  #else
+      S state;
+      iter.next(state, tick_value);
+  #endif
       
       void* ptr = PyArray_GETPTR2(result, 0, pos_states[state]);
       PyArray_SETITEM(
@@ -855,7 +854,7 @@ public:
 
     for (int nn=0; nn < getMaxTickIndex(); nn++) {
       const CumulMap& mp = get_map(nn);
-      typename CumulMap::Iterator iter = mp.iterator();
+      auto iter = mp.iterator();
 
       while (iter.hasNext()) {
         TickValue tick_value;
@@ -915,7 +914,7 @@ public:
     double ratio = time_tick*sample_count;
 
     const CumulMap& mp = get_map(getMaxTickIndex()-1);
-    typename CumulMap::Iterator iter = mp.iterator();
+    auto iter = mp.iterator();
 
     while (iter.hasNext()) {
       TickValue tick_value;
@@ -995,7 +994,7 @@ public:
     double ratio = time_tick * sample_count;
     for (int nn = 0; nn < max_tick_index; ++nn) { // time tick
       const CumulMap& mp = get_map(nn);
-      typename CumulMap::Iterator iter = mp.iterator();
+      auto iter = mp.iterator();
       H_v[nn] = 0.;
       TH_v[nn] = 0.;
       while (iter.hasNext()) {
@@ -1022,7 +1021,7 @@ public:
 
     for (int nn = 0; nn < max_tick_index; ++nn) { // time tick
       const HDCumulMap& hd_mp = get_hd_map(nn);
-      typename HDCumulMap::Iterator iter = hd_mp.iterator();
+      auto iter = hd_mp.iterator();
       MAP<unsigned int, double>& hd_m = HD_v[nn];
       while (iter.hasNext()) {
         double tm_slice;
@@ -1047,7 +1046,7 @@ public:
   {
     assert(sample_num < sample_count);
 
-    typename ProbaDist<S>::Iterator curtraj_proba_dist_iter = curtraj_proba_dist.iterator();
+    auto curtraj_proba_dist_iter = curtraj_proba_dist.iterator();
 
     double proba_max_time = 0.;
 
@@ -1094,8 +1093,8 @@ public:
     Cumulator* ret_cumul = new Cumulator(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), t_cumulator_size, t_statdist_size);
     size_t min_cumul_size = ~0ULL;
     size_t min_tick_index_size = ~0ULL;
-    typename std::vector<Cumulator*>::iterator begin = cumulator_v.begin();
-    typename std::vector<Cumulator*>::iterator end = cumulator_v.end();
+    auto begin = cumulator_v.begin();
+    auto end = cumulator_v.end();
     while (begin != end) {
       Cumulator* cumulator = *begin;
       cumulator->computeMaxTickIndex();
