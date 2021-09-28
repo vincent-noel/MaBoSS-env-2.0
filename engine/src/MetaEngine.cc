@@ -325,6 +325,10 @@ const double MetaEngine::getFinalTime() const {
 
 void MetaEngine::displayFixpoints(std::ostream& output_fp, bool hexfloat) const 
 {
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
+
   output_fp << "Fixed Points (" << fixpoints.size() << ")\n";
   if (0 == fixpoints.size()) {
     return;
@@ -354,10 +358,18 @@ void MetaEngine::displayFixpoints(std::ostream& output_fp, bool hexfloat) const
     network_state.display(output_fp, network);
     ++begin;
   }
+  
+#ifdef MPI_COMPAT
+  }
+#endif
 }
 
 void MetaEngine::displayFixpoints(FixedPointDisplayer* displayer) const 
-{
+{  
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
+
   displayer->begin(fixpoints.size());
   /*
   output_fp << "Fixed Points (" << fixpoints.size() << ")\n";
@@ -373,7 +385,11 @@ void MetaEngine::displayFixpoints(FixedPointDisplayer* displayer) const
   //network->displayHeader(output_fp);
   for (unsigned int nn = 0; begin != end; ++nn) {
     const NetworkState& network_state = begin->first;
+#ifdef MPI_COMPAT
+    displayer->displayFixedPoint(nn+1, network_state, begin->second, global_sample_count);
+#else
     displayer->displayFixedPoint(nn+1, network_state, begin->second, sample_count);
+#endif
     /*
     output_fp << "#" << (nn+1) << "\t";
     if (hexfloat) {
@@ -388,17 +404,41 @@ void MetaEngine::displayFixpoints(FixedPointDisplayer* displayer) const
     ++begin;
   }
   displayer->end();
+  
+#ifdef MPI_COMPAT
+  }
+#endif
 }
 
 void MetaEngine::displayProbTraj(std::ostream& output_probtraj, bool hexfloat) const {
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
+
   merged_cumulator->displayProbTrajCSV_OBSOLETE(network, refnode_count, output_probtraj, hexfloat);
+
+#ifdef MPI_COMPAT
+  }
+#endif
 }
 
 void MetaEngine::displayProbTraj(ProbTrajDisplayer* displayer) const {
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
+
   merged_cumulator->displayProbTraj(network, refnode_count, displayer);
+
+#ifdef MPI_COMPAT
+  }
+#endif
 }
 
 void MetaEngine::displayStatDist(std::ostream& output_statdist, bool hexfloat) const {
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
+
   Probe probe;
   merged_cumulator->displayStatDistCSV_OBSOLETE(network, refnode_count, output_statdist, hexfloat);
   probe.stop();
@@ -409,9 +449,17 @@ void MetaEngine::displayStatDist(std::ostream& output_statdist, bool hexfloat) c
   if (statdist_traj_count == 0) {
     output_statdist << "Trajectory\tState\tProba\n";
   }
+  
+#ifdef MPI_COMPAT
+  }
+#endif
 }
 
 void MetaEngine::displayStatDist(StatDistDisplayer* statdist_displayer) const {
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
+
   Probe probe;
   merged_cumulator->displayStatDist(network, refnode_count, statdist_displayer);
   probe.stop();
@@ -424,6 +472,10 @@ void MetaEngine::displayStatDist(StatDistDisplayer* statdist_displayer) const {
     output_statdist << "Trajectory\tState\tProba\n";
   }
   */
+ 
+#ifdef MPI_COMPAT
+  }
+#endif
 }
 
 void MetaEngine::display(std::ostream& output_probtraj, std::ostream& output_statdist, std::ostream& output_fp, bool hexfloat) const
@@ -449,5 +501,11 @@ void MetaEngine::display(ProbTrajDisplayer* probtraj_displayer, StatDistDisplaye
 
 void MetaEngine::displayAsymptotic(std::ostream& output_asymptprob, bool hexfloat, bool proba) const
 {
+#ifdef MPI_COMPAT
+  if (world_rank == 0) {
+#endif
   merged_cumulator->displayAsymptoticCSV(network, refnode_count, output_asymptprob, hexfloat, proba);
+#ifdef MPI_COMPAT
+  }
+#endif
 }
