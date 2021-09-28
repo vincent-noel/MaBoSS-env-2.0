@@ -841,7 +841,9 @@ public:
     return state & nodeBit(node);
 #endif
   }
-    
+
+#ifdef USE_STATIC_BITSET
+  
   static std::vector<unsigned long long> to_ullongs(std::bitset<MAXNODES> bs) {
     std::vector<unsigned long long> ret;
     ret.clear();
@@ -870,9 +872,9 @@ public:
     } 
     return ret;
   }
-  
-};
+#endif
 
+};
 // abstract base class used for expression evaluation
 class Expression {
 
