@@ -728,8 +728,10 @@ int main(int argc, char* argv[])
 	FixedPointDisplayer* fp_displayer;
 	if (format == CSV_FORMAT) {
 	  probtraj_displayer = new CSVProbTrajDisplayer(network, *output_probtraj, hexfloat);
+	  // probtraj_displayer = new CSVProbTrajDisplayer(network, std::cout, hexfloat);
 	  statdist_displayer = new CSVStatDistDisplayer(network, *output_statdist, hexfloat);
 	  fp_displayer = new CSVFixedPointDisplayer(network, *output_fp, hexfloat);
+	  // fp_displayer = new CSVFixedPointDisplayer(network, std::cout, hexfloat);
 	} else if (format == JSON_FORMAT) {
 	  probtraj_displayer =  new JSONProbTrajDisplayer(network, *output_probtraj, hexfloat);
 	  statdist_displayer = new JSONStatDistDisplayer(network, *output_statdist, *output_statdist_cluster, *output_statdist_distrib, hexfloat);
@@ -741,12 +743,12 @@ int main(int argc, char* argv[])
 	  fp_displayer = NULL;
 	}
 
-	if (false) {
-	  std::cerr << "***** using old displayers *****\n";
-	  mabest.display(probtraj_displayer, *output_statdist, *output_fp, hexfloat);
- 	} else {
+	// if (false) {
+	//   std::cerr << "***** using old displayers *****\n";
+	//   mabest.display(probtraj_displayer, *output_statdist, *output_fp, hexfloat);
+ 	// } else {
 	  mabest.display(probtraj_displayer, statdist_displayer, fp_displayer);
-	}
+	// }
 	time(&end_time);
 
         runconfig->display(network, start_time, end_time, mabest, *output_run);
