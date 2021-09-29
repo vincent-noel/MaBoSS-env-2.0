@@ -79,8 +79,12 @@ endif
 
 ifdef MPI_COMPAT
 MPI_FLAG = -DMPI_COMPAT
+ifndef GCC
 GCC = mpicc
+endif
+ifndef CXX
 CXX = mpic++
+endif
 endif
 
 EXTRA_CXXOPT = -O2
