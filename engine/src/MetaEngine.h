@@ -130,15 +130,9 @@ public:
   int name_len;
   MPI_Get_processor_name(processor_name, &name_len);
 
-  // Print off a hello world message
-  // printf("Hello world from processor %s, rank %d out of %d processors\n",
-  //         processor_name, world_rank, world_size);
-          
   global_sample_count = sample_count;
   sample_count /= world_size;
-  // printf("Global sample count : %d, local to this node : %d\n", global_sample_count, sample_count);
   
-    
 #endif
       
     }
