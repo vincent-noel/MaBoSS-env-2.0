@@ -125,14 +125,15 @@ public:
   // Get the rank of the process
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-  // Get the name of the processor
-  char processor_name[MPI_MAX_PROCESSOR_NAME];
-  int name_len;
-  MPI_Get_processor_name(processor_name, &name_len);
-
   global_sample_count = sample_count;
-  sample_count /= world_size;
   
+  if (world_rank == 0) {
+    sample_count = (sample_count / world_size) + (sample_count % world_size);
+  } else {
+    sample_count = sample_count / world_size;
+  }
+  printf("Global sample count : %d, local to node #%d : %d\n", global_sample_count, world_rank, sample_count);
+
 #endif
       
     }
