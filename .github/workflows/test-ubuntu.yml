@@ -166,8 +166,8 @@ jobs:
       run: |
         cd engine/src
         make clean
-        make install MPI_COMPAT=1
-        make install MPI_COMPAT=1 MAXNODES=128
+        make install CXX=mpic++ MPI_COMPAT=1
+        make install CXX=mpic++ MPI_COMPAT=1 MAXNODES=128
        
     - name: Test MaBoSS
       run: |
