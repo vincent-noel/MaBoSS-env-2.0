@@ -187,12 +187,8 @@ class Cumulator {
       TickValue t_tick_value;
       while ( t_iterator.hasNext()) {
 
-#ifdef USE_NEXT_OPT
-        const NetworkState_Impl& state = t_iterator.next2(t_tick_value);
-#else
         NetworkState_Impl state;
-        t_iterator.next(t_state, t_tick_value);
-#endif
+        t_iterator.next(state, t_tick_value);
         
         NetworkState t_state(state);
         t_state.my_MPI_Send(dest);
@@ -302,12 +298,8 @@ class Cumulator {
       double tm_slice;
       while ( t_hd_iterator.hasNext()) {
 
-#ifdef USE_NEXT_OPT
-        const NetworkState_Impl& state = t_hd_iterator.next2(tm_slice);
-#else
         NetworkState_Impl state;
         t_hd_iterator.next(state, tm_slice);
-#endif
         
         NetworkState t_state(state);
         t_state.my_MPI_Send(dest);
@@ -414,6 +406,13 @@ class Cumulator {
     return hd_cumul_map_v[nn];
   }
 
+#ifdef MPI_COMPAT
+
+static void MPI_Send_Cumulator(Cumulator* ret_cumul, int dest);
+static void MPI_Recv_Cumulator(Cumulator* mpi_ret_cumul, int origin);
+static Cumulator* initializeMPICumulator(Cumulator* ret_cumul, RunConfig* runconfig, int world_rank);
+
+#endif
   double cumultime(int at_tick_index = -1) {
     if (at_tick_index < 0) {
       at_tick_index = tick_index;
