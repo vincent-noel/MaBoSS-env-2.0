@@ -794,7 +794,7 @@ public:
 #ifdef MPI_COMPAT
   static size_t my_MPI_Pack_Size() {
 #ifdef USE_STATIC_BITSET
-    return MAXNODES/64 + (MAXNODES%64 > 0 ? 1 : 0) * sizeof(unsigned long long) + sizeof(size_t);
+    return (MAXNODES/64 + (MAXNODES%64 > 0 ? 1 : 0)) * sizeof(unsigned long long) + sizeof(size_t);
 
 #elif defined(USE_DYNAMIC_BITSET)
     return 0;
