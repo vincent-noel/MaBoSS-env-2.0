@@ -93,7 +93,7 @@ protected:
   STATE_MAP<NetworkState_Impl, unsigned int>* mergeFixpointMaps();
   
 #ifdef MPI_COMPAT
-  STATE_MAP<NetworkState_Impl, unsigned int>* mergeMPIFixpointMaps(STATE_MAP<NetworkState_Impl, unsigned int>*, bool pack=false);
+  STATE_MAP<NetworkState_Impl, unsigned int>* mergeMPIFixpointMaps(STATE_MAP<NetworkState_Impl, unsigned int>*, bool pack=true);
   STATE_MAP<NetworkState_Impl, unsigned int>* MPI_Unpack_Fixpoints(STATE_MAP<NetworkState_Impl, unsigned int>* fp_map, char* buff, unsigned int buff_size);
   static char* MPI_Pack_Fixpoints(const STATE_MAP<NetworkState_Impl, unsigned int>* fp_map, int dest, unsigned int * buff_size);
   static void MPI_Send_Fixpoints(const STATE_MAP<NetworkState_Impl, unsigned int>* fp_map, int dest);
