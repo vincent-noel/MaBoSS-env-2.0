@@ -65,13 +65,13 @@ jobs:
         cd engine/src
         make clean
         make install SBML_COMPAT=1
-        make MAXNODES=128 install SBML_COMPAT=1
+        # make MAXNODES=128 install SBML_COMPAT=1
     
     - name: Test MaBoSS
       run: |
         bash -c "cd engine/tests; bash ./test-cellcycle.sh"
         bash -c "cd engine/tests; bash ./test-ensemble.sh"
-        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        # bash -c "cd engine/tests; bash ./test-ewing.sh"
         bash -c "cd engine/tests; bash ./test-server.sh"
         bash -c "cd engine/tests; bash ./test-prngs.sh"
         bash -c "cd engine/tests; bash ./test-rngs.sh"
@@ -138,13 +138,13 @@ jobs:
         cd engine/src
         make clean
         make GCC=clang CXX=clang++ install SBML_COMPAT=1
-        make GCC=clang CXX=clang++ MAXNODES=128 install SBML_COMPAT=1
+        # make GCC=clang CXX=clang++ MAXNODES=128 install SBML_COMPAT=1
     
     - name: Test MaBoSS
       run: |
         bash -c "cd engine/tests; bash ./test-cellcycle.sh"
         bash -c "cd engine/tests; bash ./test-ensemble.sh"
-        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        # bash -c "cd engine/tests; bash ./test-ewing.sh"
         bash -c "cd engine/tests; bash ./test-server.sh"
         bash -c "cd engine/tests; bash ./test-prngs.sh"
         bash -c "cd engine/tests; bash ./test-rngs.sh"
@@ -576,7 +576,7 @@ jobs:
       run: |
         cd engine/tests
         python3 -m unittest test
-        python3 -m unittest test_128n
+        # python3 -m unittest test_128n
    
 
   cmaboss_conda_defaults:

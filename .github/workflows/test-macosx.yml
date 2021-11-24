@@ -77,13 +77,13 @@ jobs:
         export CXXFLAGS="${CXXFLAGS} -I/usr/local/include -I/usr/local/include/libxml2"
         export LDFLAGS="${LDFLAGS} -L/usr/local/lib -lxml2"
         make CXX=g++-10 install SBML_COMPAT=1
-        make CXX=g++-10 MAXNODES=128 install SBML_COMPAT=1
+        # make CXX=g++-10 MAXNODES=128 install SBML_COMPAT=1
         
     - name: Test MaBoSS
       run: |
         bash -c "cd engine/tests; bash ./test-cellcycle.sh"
         bash -c "cd engine/tests; bash ./test-ensemble.sh"
-        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        # bash -c "cd engine/tests; bash ./test-ewing.sh"
         bash -c "cd engine/tests; bash ./test-server.sh"
         bash -c "cd engine/tests; bash ./test-sbml.sh"
         bash -c "cd engine/tests; bash ./test-prngs.sh"
@@ -154,13 +154,13 @@ jobs:
         make clean
         g++ --version
         make CXX=g++ install SBML_COMPAT=1
-        make CXX=g++ MAXNODES=128 install SBML_COMPAT=1
+        # make CXX=g++ MAXNODES=128 install SBML_COMPAT=1
         
     - name: Test MaBoSS
       run: |
         bash -c "cd engine/tests; bash ./test-cellcycle.sh"
         bash -c "cd engine/tests; bash ./test-ensemble.sh"
-        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        # bash -c "cd engine/tests; bash ./test-ewing.sh"
         bash -c "cd engine/tests; bash ./test-server.sh"
         bash -c "cd engine/tests; bash ./test-sbml.sh"
         bash -c "cd engine/tests; bash ./test-prngs.sh"
@@ -548,7 +548,7 @@ jobs:
       run: |
         cd engine/tests
         python3 -m unittest test
-        python3 -m unittest test_128n
+        # python3 -m unittest test_128n
   
   conda_cmaboss:
     name: cMaBoSS Conda package
