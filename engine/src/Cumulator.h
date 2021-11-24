@@ -828,9 +828,11 @@ public:
     return result_nodes;
   }
 
-  PyObject* getNumpyNodesDists(Network* network) const 
+  PyObject* getNumpyNodesDists(Network* network, std::vector<Node*> output_nodes) const 
   {
-    std::vector<Node*> output_nodes = getNodes(network);
+    if (output_nodes.size() == 0){
+      output_nodes = getNodes(network);
+    }
     
     npy_intp dims[2] = {(npy_intp) getMaxTickIndex(), (npy_intp) output_nodes.size()};
     PyArrayObject* result = (PyArrayObject *) PyArray_ZEROS(2,dims,NPY_DOUBLE, 0); 
@@ -889,9 +891,11 @@ public:
   }
 
 
-  PyObject* getNumpyLastNodesDists(Network* network) const 
+  PyObject* getNumpyLastNodesDists(Network* network, std::vector<Node*> output_nodes) const 
   {
-    std::vector<Node*> output_nodes = getNodes(network);
+    if (output_nodes.size() == 0){
+      output_nodes = getNodes(network);
+    }
     
     npy_intp dims[2] = {(npy_intp) 1, (npy_intp) output_nodes.size()};
     PyArrayObject* result = (PyArrayObject *) PyArray_ZEROS(2,dims,NPY_DOUBLE, 0); 
