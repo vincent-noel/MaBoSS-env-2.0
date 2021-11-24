@@ -541,7 +541,7 @@ jobs:
         make
         cd ../python grammars
         cp -r ../src cmaboss
-        python3 setup.py build_ext --inplace
+        pip3 install .
         cd ../..
     
     - name: Test cMaBoSS
