@@ -27,13 +27,13 @@ jobs:
         cd engine/src
         make clean
         make CXX=g++-10 install
-        make CXX=g++-10 MAXNODES=128 install
+        # make CXX=g++-10 MAXNODES=128 install
         
     - name: Test MaBoSS
       run: |
         bash -c "cd engine/tests; bash ./test-cellcycle.sh"
         bash -c "cd engine/tests; bash ./test-ensemble.sh"
-        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        # bash -c "cd engine/tests; bash ./test-ewing.sh"
         bash -c "cd engine/tests; bash ./test-server.sh"
         bash -c "cd engine/tests; bash ./test-user_func.sh"
         bash -c "cd engine/tests; bash ./test-prngs.sh"
@@ -56,13 +56,13 @@ jobs:
         make clean
         g++ --version
         make CXX=g++ install
-        make CXX=g++ MAXNODES=128 install
+        # make CXX=g++ MAXNODES=128 install
         
     - name: Test MaBoSS
       run: |
         bash -c "cd engine/tests; bash ./test-cellcycle.sh"
         bash -c "cd engine/tests; bash ./test-ensemble.sh"
-        bash -c "cd engine/tests; bash ./test-ewing.sh"
+        # bash -c "cd engine/tests; bash ./test-ewing.sh"
         bash -c "cd engine/tests; bash ./test-server.sh"
         bash -c "cd engine/tests; bash ./test-user_func.sh"
         bash -c "cd engine/tests; bash ./test-prngs.sh"
@@ -122,7 +122,7 @@ jobs:
       run: |
         cd engine/python
         python3 -m unittest test
-        python3 -m unittest test_128n
+        # python3 -m unittest test_128n
   
   conda_cmaboss:
     name: cMaBoSS Conda package
