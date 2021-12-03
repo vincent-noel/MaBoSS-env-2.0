@@ -1108,7 +1108,9 @@ Cumulator* Cumulator::mergeMPICumulators(RunConfig* runconfig, Cumulator* ret_cu
       if (world_rank == 0) {
         int rank = i;
         MPI_Bcast(&rank, 1, MPI_INT, 0, MPI_COMM_WORLD);
+          unsigned long int sec= time(NULL);
 
+        std::cout << sec << " Receiving from node " << rank << std::endl;
         if (pack) 
         {
           // MPI_Unpack version
