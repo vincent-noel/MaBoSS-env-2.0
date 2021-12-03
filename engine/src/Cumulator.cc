@@ -816,7 +816,7 @@ size_t Cumulator::MPI_Size_Cumulator(Cumulator* ret_cumul)
   size_t total_size = sizeof(size_t);
   size_t t_cumul_size = ret_cumul != NULL ? ret_cumul->cumul_map_v.size() : 0;
   
-  
+  std::cout << "Packed cumulator size : " << t_cumul_size;
   for (size_t nn = 0; nn < t_cumul_size; ++nn) {
     
     total_size += ret_cumul->get_map(nn).my_MPI_Size();
@@ -826,12 +826,19 @@ size_t Cumulator::MPI_Size_Cumulator(Cumulator* ret_cumul)
     total_size += sizeof(double);  
   }
   
+  std::cout << " : " << total_size;
+  
+  
+  
   total_size += sizeof(size_t);
   size_t t_proba_dist_size = ret_cumul != NULL ? ret_cumul->proba_dist_v.size() : 0;
   
+  std::cout << ", " << t_proba_dist_size;
   for (size_t ii = 0; ii < t_proba_dist_size; ii++) {
     total_size += ret_cumul->proba_dist_v[ii].my_MPI_Size();
   }
+   std::cout << " : " << total_size << std::endl;
+   
   return total_size;
 }
 
@@ -1019,6 +1026,7 @@ Cumulator* Cumulator::mergeMPICumulators(RunConfig* runconfig, Cumulator* ret_cu
     unsigned int rr = 0;
     unsigned int buff_size;
     char* buff;
+    unsigned long int sec;
     
     if (world_rank == 0) {
       // Now that the cumulator is initialized, we add values from node 0
@@ -1035,14 +1043,22 @@ Cumulator* Cumulator::mergeMPICumulators(RunConfig* runconfig, Cumulator* ret_cu
         }
       }
     } else if (pack) {
+      sec= time(NULL);
+
+  std::cout << sec << " Building packed cumulator on " << world_rank << std::endl;
       buff = MPI_Pack_Cumulator(ret_cumul, 0, &buff_size);
+      sec= time(NULL);
+        std::cout << sec << " Built packed cumulator (" << buff_size << ") on " << world_rank << std::endl;
+
     }
 
     for (int i = 1; i < world_size; i++) {
       if (world_rank == 0) {
         int rank = i;
         MPI_Bcast(&rank, 1, MPI_INT, 0, MPI_COMM_WORLD);
+          sec= time(NULL);
 
+        std::cout << sec << " Receiving from node " << rank << std::endl;
         if (pack) 
         {
           // MPI_Unpack version
@@ -1051,7 +1067,14 @@ Cumulator* Cumulator::mergeMPICumulators(RunConfig* runconfig, Cumulator* ret_cu
           char* buff = new char[buff_size];
           MPI_Recv( buff, buff_size, MPI_PACKED, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
           
+          sec= time(NULL);
+          std::cout << sec << " Received packed cumulator from " << rank << " on " << world_rank << std::endl;
+          
           MPI_Unpack_Cumulator(mpi_ret_cumul, buff, buff_size);
+                       
+          sec= time(NULL);
+          std::cout << sec << " Unpacked cumulator from " << rank << " on " << world_rank << std::endl;
+
           delete buff;
         } else {
           MPI_Recv_Cumulator(mpi_ret_cumul, i);
@@ -1066,8 +1089,15 @@ Cumulator* Cumulator::mergeMPICumulators(RunConfig* runconfig, Cumulator* ret_cu
           if (pack) {
             // unsigned int buff_size;
             // char* buff = MPI_Pack_Cumulator(ret_cumul, 0, &buff_size);
+              sec= time(NULL);
+
+  std::cout << sec << " Sending packed cumulator from " << world_rank << std::endl;
+
             MPI_Send(&buff_size, 1, MPI_UNSIGNED, 0, 0, MPI_COMM_WORLD);
             MPI_Send( buff, buff_size, MPI_PACKED, 0, 0, MPI_COMM_WORLD); 
+      sec= time(NULL);
+        std::cout << sec << " Sent packed cumulator from " << world_rank << std::endl;
+
             delete buff;
             
           } else {
