@@ -156,6 +156,9 @@ void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thre
   Probe probe;
   probe.start();
 #ifdef MPI_COMPAT
+unsigned long int sec = time(NULL);
+std::cout << sec << " Running thread with seed " << (seed+start_count_thread) << " on node " <<  world_rank  << std::endl;
+
   // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << " on node " << world_rank << std::endl;
 #else
   // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << std::endl;
@@ -164,7 +167,7 @@ void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thre
   RandomGenerator* random_generator = randgen_factory->generateRandomGenerator(seed);
   for (unsigned int nn = 0; nn < sample_count_thread; ++nn) {
 #ifdef MPI_COMPAT
-    // std::cout << "Running thread with seed " << seed+start_count_thread+nn  << " on node " << world_rank << std::endl;
+    // std::cout << sec << " Running thread with seed " << seed+start_count_thread+nn  << " on node " << world_rank << std::endl;
 #else 
     // std::cout << "Running thread with seed " << seed+start_count_thread+nn << std::endl;
 #endif
@@ -280,8 +283,11 @@ void MaBEstEngine::run(std::ostream* output_traj)
   pthread_t* tid = new pthread_t[thread_count];
   RandomGeneratorFactory* randgen_factory = runconfig->getRandomGeneratorFactory();
   int seed = runconfig->getSeedPseudoRandom();
+  unsigned long int sec;
+
 #ifdef MPI_COMPAT
   unsigned int start_sample_count = sample_count * world_rank;
+
 #else
   unsigned int start_sample_count = 0;
     // start_sample_count += sample_count; 
@@ -310,14 +316,23 @@ void MaBEstEngine::run(std::ostream* output_traj)
     start_sample_count += cumulator_v[nn]->getSampleCount();
   }
   for (unsigned int nn = 0; nn < thread_count; ++nn) {
-    // std::cout << "Lauching thread " << nn << ", seed = " << seed << std::endl;
+    
+    
     pthread_join(tid[nn], NULL);
+    sec= time(NULL);
+
+#ifdef MPI_COMPAT
+    std::cout << sec << " Thread " << nn << " on node " << world_rank << " : elapsed_time=" << thread_elapsed_runtimes[world_rank][nn]/1000.0 << "s" << std::endl;
+#else
+    std::cout << sec << " Thread " << nn << " : elapsed_time=" << thread_elapsed_runtimes[nn]/1000.0 << "s" << std::endl;
+#endif
   }
   probe.stop();
   elapsed_core_runtime = probe.elapsed_msecs();
   user_core_runtime = probe.user_msecs();
 #ifdef MPI_COMPAT
-  // std::cout << "Trajectories computed, running epilogue on node " << world_rank << std::endl;
+  sec= time(NULL);
+  std::cout << sec << " Trajectories computed on node " << world_rank << std::endl;
   
   if (world_rank == 0) {
     elapsed_core_runtimes.resize(world_size);
@@ -328,10 +343,12 @@ void MaBEstEngine::run(std::ostream* output_traj)
   MPI_Gather(&user_core_runtime, 1, MPI_LONG_LONG_INT, user_core_runtimes.data(), 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
 
   
-  
-  
+  sec= time(NULL);
+    std::cout << sec << " Starting epilogue on node " << world_rank << std::endl;
+
 #else
-  // std::cout << "Trajectories computed, running epilogue" << std::endl;
+sec= time(NULL);
+  std::cout << sec <<  " Trajectories computed, running epilogue" << std::endl;
 #endif
   probe.start();
   epilogue();
@@ -339,7 +356,9 @@ void MaBEstEngine::run(std::ostream* output_traj)
   elapsed_epilogue_runtime = probe.elapsed_msecs();
   user_epilogue_runtime = probe.user_msecs();
 #ifdef MPI_COMPAT  
-  // std::cout << "Epilogue done, quitting run() on node " << world_rank <<  std::endl;
+sec= time(NULL);
+
+  std::cout << sec <<  " Epilogue done, quitting run() on node " << world_rank <<  std::endl;
   
   if (world_rank == 0) {
     elapsed_epilogue_runtimes.resize(world_size);
@@ -348,10 +367,10 @@ void MaBEstEngine::run(std::ostream* output_traj)
   
   MPI_Gather(&elapsed_epilogue_runtime, 1, MPI_LONG_LONG_INT, elapsed_epilogue_runtimes.data(), 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
   MPI_Gather(&user_epilogue_runtime, 1, MPI_LONG_LONG_INT, user_epilogue_runtimes.data(), 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
-
   
 #else
-  // std::cout << "Epilogue done, quitting run()" << std::endl;
+sec= time(NULL);
+  std::cout << sec << " Epilogue done, quitting run()" << std::endl;
 #endif
   delete [] tid;
 }  
@@ -361,22 +380,38 @@ void MaBEstEngine::epilogue()
   merged_cumulator = Cumulator::mergeCumulatorsParallel(runconfig, cumulator_v);
   
 #ifdef MPI_COMPAT
+unsigned long int sec= time(NULL);
+
+  std::cout << sec << " Finished merging local cumulators on node " << world_rank << std::endl;
+
   merged_cumulator = Cumulator::mergeMPICumulators(runconfig, merged_cumulator, world_size, world_rank);
 
   if (world_rank == 0)
   {
+#else
+unsigned long int sec= time(NULL);
+
+  std::cout << sec << " Finished merging local cumulators " << std::endl;
+
 #endif
+
   merged_cumulator->epilogue(network, reference_state);
 #ifdef MPI_COMPAT
-  }
-  // std::cout << "Finished merging cumulators on node " << world_rank << std::endl;
+  }    
+  sec= time(NULL);
+
+  std::cout << sec << " Finished merging global cumulators on node " << world_rank << std::endl;
 #endif 
 
   STATE_MAP<NetworkState_Impl, unsigned int>* merged_fixpoint_map = mergeFixpointMaps();
 
 #ifdef MPI_COMPAT
+ sec= time(NULL);
+
+  std::cout << sec << " Finished merging local fixpoints on node " << world_rank << std::endl;
   merged_fixpoint_map = mergeMPIFixpointMaps(merged_fixpoint_map);
-  // std::cout << "Finished merging fixpoints on node " << world_rank << std::endl;
+  sec= time(NULL);
+  std::cout << sec << " Finished merging global fixpoints on node " << world_rank << std::endl;
 #endif
 
   STATE_MAP<NetworkState_Impl, unsigned int>::const_iterator b = merged_fixpoint_map->begin();
