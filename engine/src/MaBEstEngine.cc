@@ -336,6 +336,8 @@ void MaBEstEngine::run(std::ostream* output_traj)
   int seed = runconfig->getSeedPseudoRandom();
 #ifdef MPI_COMPAT
   unsigned int start_sample_count = sample_count * world_rank;
+    unsigned long int sec;
+
 #else
   unsigned int start_sample_count = 0;
     // start_sample_count += sample_count; 
@@ -352,14 +354,14 @@ void MaBEstEngine::run(std::ostream* output_traj)
     start_sample_count += cumulator_v[nn]->getSampleCount();
   }
   for (unsigned int nn = 0; nn < thread_count; ++nn) {
-    std::cout << "Lauching thread " << nn << ", seed = " << seed << std::endl;
+    //std::cout << sec << " Lauching thread " << nn << ", seed = " << seed << std::endl;
     pthread_join(tid[nn], NULL);
   }
   probe.stop();
   elapsed_core_runtime = probe.elapsed_msecs();
   user_core_runtime = probe.user_msecs();
 #ifdef MPI_COMPAT
-  unsigned long int sec= time(NULL);
+  sec= time(NULL);
   std::cout << sec << " Trajectories computed on node " << world_rank << std::endl;
   
   if (world_rank == 0) {
