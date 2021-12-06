@@ -1131,7 +1131,14 @@ Cumulator* Cumulator::mergeMPICumulators(RunConfig* runconfig, Cumulator* ret_cu
           char* buff = new char[buff_size];
           MPI_Recv( buff, buff_size, MPI_PACKED, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
           
+          sec= time(NULL);
+          std::cout << sec << " Received packed cumulator from " << rank << " on " << world_rank << std::endl;
+          
           MPI_Unpack_Cumulator(mpi_ret_cumul, buff, buff_size);
+                       
+          sec= time(NULL);
+          std::cout << sec << " Unpacked cumulator from " << rank << " on " << world_rank << std::endl;
+
           delete buff;
         } else {
           MPI_Recv_Cumulator(mpi_ret_cumul, i);
