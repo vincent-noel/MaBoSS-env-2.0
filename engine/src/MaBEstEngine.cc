@@ -210,6 +210,9 @@ void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thre
   NetworkState network_state; 
 
 #ifdef MPI_COMPAT
+unsigned long int sec = time(NULL);
+std::cout << sec << " Running thread with seed " << (seed+start_count_thread) << " on node " <<  world_rank  << std::endl;
+
   // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << " on node " << world_rank << std::endl;
 #else
   // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << std::endl;
@@ -349,7 +352,7 @@ void MaBEstEngine::run(std::ostream* output_traj)
     start_sample_count += cumulator_v[nn]->getSampleCount();
   }
   for (unsigned int nn = 0; nn < thread_count; ++nn) {
-    // std::cout << "Lauching thread " << nn << ", seed = " << seed << std::endl;
+    std::cout << "Lauching thread " << nn << ", seed = " << seed << std::endl;
     pthread_join(tid[nn], NULL);
   }
   probe.stop();
@@ -391,7 +394,6 @@ sec= time(NULL);
   
   MPI_Gather(&elapsed_epilogue_runtime, 1, MPI_LONG_LONG_INT, elapsed_epilogue_runtimes.data(), 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
   MPI_Gather(&user_epilogue_runtime, 1, MPI_LONG_LONG_INT, user_epilogue_runtimes.data(), 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
-
   
 #else
   // std::cout << "Epilogue done, quitting run()" << std::endl;
@@ -406,7 +408,7 @@ void MaBEstEngine::epilogue()
 #ifdef MPI_COMPAT
 unsigned long int sec= time(NULL);
 
-  std::cout << sec << " Finished merging node cumulators on node " << world_rank << std::endl;
+  std::cout << sec << " Finished merging local cumulators on node " << world_rank << std::endl;
 
   merged_cumulator = Cumulator::mergeMPICumulators(runconfig, merged_cumulator, world_size, world_rank);
 
@@ -418,15 +420,18 @@ unsigned long int sec= time(NULL);
   }    
   sec= time(NULL);
 
-  std::cout << sec << " Finished merging cumulators on node " << world_rank << std::endl;
+  std::cout << sec << " Finished merging global cumulators on node " << world_rank << std::endl;
 #endif 
 
   STATE_MAP<NetworkState_Impl, unsigned int>* merged_fixpoint_map = mergeFixpointMaps();
 
 #ifdef MPI_COMPAT
+ sec= time(NULL);
+
+  std::cout << sec << " Finished merging local fixpoints on node " << world_rank << std::endl;
   merged_fixpoint_map = mergeMPIFixpointMaps(merged_fixpoint_map);
   sec= time(NULL);
-  std::cout << sec << " Finished merging fixpoints on node " << world_rank << std::endl;
+  std::cout << sec << " Finished merging global fixpoints on node " << world_rank << std::endl;
 #endif
 
   STATE_MAP<NetworkState_Impl, unsigned int>::const_iterator b = merged_fixpoint_map->begin();
