@@ -108,6 +108,7 @@ protected:
   
   // Global sample count          
   unsigned int global_sample_count;
+  unsigned int global_statdist_trajcount;
 
   std::vector<long long> elapsed_core_runtimes;
   std::vector<long long> user_core_runtimes;
@@ -138,11 +139,14 @@ public:
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
   global_sample_count = sample_count;
+  global_statdist_trajcount = statdist_trajcount;
   
   if (world_rank == 0) {
     sample_count = (sample_count / world_size) + (sample_count % world_size);
+    statdist_trajcount = (statdist_trajcount / world_size) + (statdist_trajcount % world_size);
   } else {
     sample_count = sample_count / world_size;
+    statdist_trajcount = statdist_trajcount / world_size;
   }
   
   // Get the name of the processor
@@ -151,7 +155,9 @@ public:
   MPI_Get_processor_name(processor_name, &name_len);
   unsigned long int sec= time(NULL);
 
-  std::cout << sec << " " << processor_name << ":" << world_rank << "/" << world_size << " (" << sample_count << "/" << global_sample_count << ")"
+  std::cout << sec << " " << processor_name << ":" << world_rank << "/" << world_size 
+            << " (" << sample_count << "/" << global_sample_count 
+            << ", " << statdist_trajcount << "/" << global_statdist_trajcount << ")"
             << std::endl;
 #endif
       

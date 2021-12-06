@@ -872,7 +872,7 @@ size_t Cumulator::MPI_Size_Cumulator(Cumulator* ret_cumul)
   size_t total_size = sizeof(size_t);
   size_t t_cumul_size = ret_cumul != NULL ? ret_cumul->cumul_map_v.size() : 0;
   
-  std::cout << "Packed cumulator size : " << t_cumul_size;
+  // std::cout << "Packed cumulator size : " << t_cumul_size;
   for (size_t nn = 0; nn < t_cumul_size; ++nn) {
     
     total_size += ret_cumul->get_map(nn).my_MPI_Size();
@@ -884,18 +884,18 @@ size_t Cumulator::MPI_Size_Cumulator(Cumulator* ret_cumul)
     total_size += sizeof(double);  
   }
   
-  std::cout << " : " << total_size;
+  // std::cout << " : " << total_size;
   
   
   
   total_size += sizeof(size_t);
   size_t t_proba_dist_size = ret_cumul != NULL ? ret_cumul->proba_dist_v.size() : 0;
   
-  std::cout << ", " << t_proba_dist_size;
+  // std::cout << ", " << t_proba_dist_size;
   for (size_t ii = 0; ii < t_proba_dist_size; ii++) {
     total_size += ret_cumul->proba_dist_v[ii].my_MPI_Size();
   }
-   std::cout << " : " << total_size << std::endl;
+  //  std::cout << " : " << total_size << std::endl;
    
   return total_size;
 }
@@ -1043,17 +1043,17 @@ Cumulator* Cumulator::initializeMPICumulator(Cumulator* ret_cumul, RunConfig* ru
   unsigned int local_cumulator_size = ret_cumul != NULL ? ret_cumul->sample_count : 0;
   unsigned int global_cumulator_size;
   MPI_Reduce(&local_cumulator_size, &global_cumulator_size, 1, MPI_UNSIGNED, MPI_SUM, 0, MPI_COMM_WORLD);
-
-  unsigned int t_statdist_trajcount;
-  MPI_Reduce(&(ret_cumul->statdist_trajcount), &t_statdist_trajcount, 1, MPI_UNSIGNED, MPI_SUM, 0, MPI_COMM_WORLD);
-
+  
+  unsigned int local_statdist_trajcount = ret_cumul != NULL ? ret_cumul->statdist_trajcount : 0;
+  unsigned int global_statdist_trajcount;
+  MPI_Reduce(&(local_statdist_trajcount), &global_statdist_trajcount, 1, MPI_UNSIGNED, MPI_SUM, 0, MPI_COMM_WORLD);
     
   // Now we can build the MPI version of ret_cumul on node 0
   // Unallocated on nodes > 1, we should be careful nobody uses it later !
   // it means nothing can touch the cumulator after return if not rank 0. No epilogue, no displayer, no data extraction !!!
   Cumulator* mpi_ret_cumul = NULL;
   if (world_rank == 0) {
-    mpi_ret_cumul = new Cumulator(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), global_cumulator_size, t_statdist_trajcount);      
+    mpi_ret_cumul = new Cumulator(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), global_cumulator_size, global_statdist_trajcount);      
   }
   
   // Then we want to know the minimum number of ticks in all cumulators... 
