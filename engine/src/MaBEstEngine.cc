@@ -211,7 +211,7 @@ void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thre
 
 #ifdef MPI_COMPAT
 unsigned long int sec = time(NULL);
-std::cout << sec << " Running thread with seed " << (seed+start_count_thread) << " on node " <<  world_rank  << std::endl;
+// std::cout << sec << " Running thread with seed " << (seed+start_count_thread) << " on node " <<  world_rank  << std::endl;
 
   // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << " on node " << world_rank << std::endl;
 #else

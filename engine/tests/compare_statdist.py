@@ -32,8 +32,10 @@ def get_raw_data(file):
 def main(args):
     if len(args) >= 3 and os.path.exists(args[1]) and os.path.exists(args[2]) and args[1].endswith(".csv") and args[2].endswith(".csv"):
         table1 = get_raw_data(args[1])
-        table2 = get_raw_data(args[2])
+        print(table1.shape)
 
+        table2 = get_raw_data(args[2])
+        print(table2.shape)
         if len(args) > 3 and args[3] == "--exact":
             sys.exit(0 if numpy.all(table1 == table2) else 1)
         else:
