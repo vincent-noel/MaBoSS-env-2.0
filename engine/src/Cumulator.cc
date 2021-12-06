@@ -962,7 +962,7 @@ size_t Cumulator::MPI_Size_Cumulator(Cumulator* ret_cumul)
   size_t total_size = sizeof(size_t);
   size_t t_cumul_size = ret_cumul != NULL ? ret_cumul->cumul_map_v.size() : 0;
   
-  
+  std::cout << "Packed cumulator size : " << t_cumul_size;
   for (size_t nn = 0; nn < t_cumul_size; ++nn) {
     
     total_size += ret_cumul->get_map(nn).my_MPI_Size();
@@ -974,12 +974,19 @@ size_t Cumulator::MPI_Size_Cumulator(Cumulator* ret_cumul)
     total_size += sizeof(double);  
   }
   
+  std::cout << " : " << total_size;
+  
+  
+  
   total_size += sizeof(size_t);
   size_t t_proba_dist_size = ret_cumul != NULL ? ret_cumul->proba_dist_v.size() : 0;
   
+  std::cout << ", " << t_proba_dist_size;
   for (size_t ii = 0; ii < t_proba_dist_size; ii++) {
     total_size += ret_cumul->proba_dist_v[ii].my_MPI_Size();
   }
+   std::cout << " : " << total_size << std::endl;
+   
   return total_size;
 }
 
