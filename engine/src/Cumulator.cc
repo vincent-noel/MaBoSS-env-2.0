@@ -760,6 +760,9 @@ const double Cumulator::getFinalTime() const {
 void Cumulator::add(unsigned int where, const CumulMap& add_cumul_map)
 {
   CumulMap& to_cumul_map = get_map(where);
+#ifdef THREADS_MERGING_VERBOSE
+  std::cout << "Adding MAP of size " << add_cumul_map.size() << " to the existing of size " << to_cumul_map.size() << std::endl;
+#endif
 
   CumulMap::Iterator iter = add_cumul_map.iterator();
   while (iter.hasNext()) {
@@ -778,7 +781,9 @@ void Cumulator::add(unsigned int where, const CumulMap& add_cumul_map)
 void Cumulator::add(unsigned int where, const HDCumulMap& add_hd_cumul_map)
 {
   HDCumulMap& to_hd_cumul_map = get_hd_map(where);
-
+#ifdef THREADS_MERGING_VERBOSE
+  std::cout << "Adding HDMAP of size " << add_hd_cumul_map.size() << " to the existing of size " << to_hd_cumul_map.size() << std::endl;
+#endif
   HDCumulMap::Iterator iter = add_hd_cumul_map.iterator();
   while (iter.hasNext()) {
     double tm_slice;
@@ -836,14 +841,39 @@ Cumulator* Cumulator::mergeCumulators(RunConfig* runconfig, std::vector<Cumulato
 #endif
   ret_cumul->max_tick_index = ret_cumul->tick_index = min_tick_index_size;
 
-  begin = cumulator_v.begin();
-  unsigned int rr = 0;
-  for (unsigned int jj = 0; begin != end; ++jj) {
-    Cumulator* cumulator = *begin;
-    for (unsigned int nn = 0; nn < min_cumul_size; ++nn) {
-      ret_cumul->add(nn, cumulator->cumul_map_v[nn]);
+    begin = cumulator_v.begin();
+    unsigned int rr = 0;
+#ifdef THREADS_MERGING_VERBOSE
+    unsigned int i_cumulator = 0;
+    unsigned long int sec;
+#endif
+
+    for (unsigned int jj = 0; begin != end; ++jj) {
+#ifdef THREADS_MERGING_VERBOSE      
+      sec = time(NULL);
+      std::cout << sec << " Merging cumulator " << i_cumulator << std::endl; 
+#endif
+
+      Cumulator* cumulator = *begin;
+      for (unsigned int nn = 0; nn < min_cumul_size; ++nn) {
+        
+#ifdef THREADS_MERGING_VERBOSE      
+      sec = time(NULL);
+      std::cout << sec << " > t" << jj << std::endl; 
+#endif
+        
+        
+        ret_cumul->add(nn, cumulator->cumul_map_v[nn]);
+#ifdef THREADS_MERGING_VERBOSE      
+      sec = time(NULL);
+      std::cout << sec << " >> map done" << std::endl; 
+#endif
 #ifdef HD_BUG
-      ret_cumul->add(nn, cumulator->hd_cumul_map_v[nn]);
+        ret_cumul->add(nn, cumulator->hd_cumul_map_v[nn]);
+#ifdef THREADS_MERGING_VERBOSE      
+      sec = time(NULL);
+      std::cout << sec << " >> HDmap done" << std::endl; 
+#endif
 #endif
       ret_cumul->TH_square_v[nn] += cumulator->TH_square_v[nn];
     }
@@ -852,7 +882,17 @@ Cumulator* Cumulator::mergeCumulators(RunConfig* runconfig, std::vector<Cumulato
       assert(ret_cumul->proba_dist_v.size() > rr);
       ret_cumul->proba_dist_v[rr++] = cumulator->proba_dist_v[ii];
     }
+    
+#ifdef THREADS_MERGING_VERBOSE      
+    sec = time(NULL);
+    std::cout << sec << " >> proba dist done" << std::endl; 
+#endif
     ++begin;
+#ifdef THREADS_MERGING_VERBOSE
+    sec = time(NULL);
+    std::cout << sec << " Merged cumulator " << i_cumulator << std::endl; 
+    i_cumulator++;
+#endif      
   }
   
   return ret_cumul;

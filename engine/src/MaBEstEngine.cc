@@ -334,9 +334,10 @@ void MaBEstEngine::run(std::ostream* output_traj)
   pthread_t* tid = new pthread_t[thread_count];
   RandomGeneratorFactory* randgen_factory = runconfig->getRandomGeneratorFactory();
   int seed = runconfig->getSeedPseudoRandom();
+  unsigned long int sec;
+
 #ifdef MPI_COMPAT
   unsigned int start_sample_count = sample_count * world_rank;
-    unsigned long int sec;
 
 #else
   unsigned int start_sample_count = 0;
@@ -377,7 +378,8 @@ void MaBEstEngine::run(std::ostream* output_traj)
     std::cout << sec << " Starting epilogue on node " << world_rank << std::endl;
 
 #else
-  // std::cout << "Trajectories computed, running epilogue" << std::endl;
+sec= time(NULL);
+  std::cout << sec <<  " Trajectories computed, running epilogue" << std::endl;
 #endif
   probe.start();
   epilogue();
@@ -398,7 +400,8 @@ sec= time(NULL);
   MPI_Gather(&user_epilogue_runtime, 1, MPI_LONG_LONG_INT, user_epilogue_runtimes.data(), 1, MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
   
 #else
-  // std::cout << "Epilogue done, quitting run()" << std::endl;
+sec= time(NULL);
+  std::cout << sec << " Epilogue done, quitting run()" << std::endl;
 #endif
   delete [] tid;
 }  
@@ -416,7 +419,13 @@ unsigned long int sec= time(NULL);
 
   if (world_rank == 0)
   {
+#else
+unsigned long int sec= time(NULL);
+
+  std::cout << sec << " Finished merging local cumulators " << std::endl;
+
 #endif
+
   merged_cumulator->epilogue(network, reference_state);
 #ifdef MPI_COMPAT
   }    
