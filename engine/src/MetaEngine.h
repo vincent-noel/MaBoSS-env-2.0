@@ -155,10 +155,14 @@ public:
   MPI_Get_processor_name(processor_name, &name_len);
   unsigned long int sec= time(NULL);
 
-  std::cout << sec << " " << processor_name << ":" << world_rank << "/" << world_size 
+  std::cout << sec << " " << processor_name << ":" << (world_rank+1) << "/" << world_size 
             << " (" << sample_count << "/" << global_sample_count 
             << ", " << statdist_trajcount << "/" << global_statdist_trajcount << ")"
             << std::endl;
+            
+#else 
+  unsigned long int sec= time(NULL);
+  std::cout << sec << " localhost:1/1 (" << sample_count << "/" << sample_count << ", " << statdist_trajcount << "/" << statdist_trajcount << ")" << std::endl;
 #endif
       
     }
