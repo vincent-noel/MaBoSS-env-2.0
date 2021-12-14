@@ -781,7 +781,7 @@ public:
   NetworkState(const NetworkState& state, int copy) : state(state.getState()) {}
 #endif
 
-  NetworkState operator&(const NetworkState& mask) { 
+  NetworkState operator&(const NetworkState& mask) const { 
     return NetworkState(state & mask.getState());
   }
   
@@ -811,6 +811,18 @@ public:
 #endif
   }
 
+  void reset() {
+#ifdef USE_STATIC_BITSET
+      state.reset();
+#elif defined(USE_DYNAMIC_BITSET)
+      // EV: 2020-10-23
+      //output_mask.resize(MAXNODES);
+      state.resize(Network::getMaxNodeSize());
+      state.reset();
+#else
+      state = 0ULL;
+#endif
+  }
 
   NodeState getNodeState(const Node* node) const {
 #if defined(USE_STATIC_BITSET) || defined(USE_DYNAMIC_BITSET)
@@ -965,7 +977,7 @@ public:
   }
   
   // & operator for applying the mask
-  PopNetworkState operator&(const NetworkState_Impl& mask) { 
+  PopNetworkState operator&(const NetworkState_Impl& mask) const { 
     
     //PopNetworkState masked_pop_state = PopNetworkState();
     PopNetworkState masked_pop_state;
@@ -978,7 +990,7 @@ public:
   }
   
   // & operator for applying the mask
-  PopNetworkState operator&(const NetworkState& mask) { 
+  PopNetworkState operator&(const NetworkState& mask) const { 
     
     //PopNetworkState masked_pop_state = PopNetworkState();
     PopNetworkState masked_pop_state;

@@ -113,9 +113,13 @@ PopMaBEstEngine::PopMaBEstEngine(PopNetwork *pop_network, RunConfig *runconfig) 
   cumulator_v.resize(thread_count);
   unsigned int count = sample_count / thread_count;
   unsigned int firstcount = count + sample_count - count * thread_count;
+    
+  unsigned int scount = statdist_trajcount / thread_count;
+  unsigned int first_scount = scount + statdist_trajcount - scount * thread_count;
+
   for (unsigned int nn = 0; nn < thread_count; ++nn)
   {
-    Cumulator<PopNetworkState> *cumulator = new Cumulator<PopNetworkState>(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), (nn == 0 ? firstcount : count));
+    Cumulator<PopNetworkState> *cumulator = new Cumulator<PopNetworkState>(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), (nn == 0 ? firstcount : count), (nn == 0 ? first_scount : scount ));
     if (has_internal)
     {
 #ifdef USE_STATIC_BITSET

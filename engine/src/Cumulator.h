@@ -443,11 +443,11 @@ public:
 
   void cumul(const S& network_state, double tm, double TH) {
 #ifdef USE_DYNAMIC_BITSET
-    S fullstate(network_state.getState() & refnode_mask.getState(), 1);
+    S fullstate(network_state & refnode_mask, 1);
 #else
-    S fullstate(network_state.getState() & refnode_mask.getState());
+    S fullstate(network_state & refnode_mask);
 #endif
-    S state(network_state.getState() & output_mask.getState());
+    S state(network_state & output_mask);
     double time_1 = cumultime(tick_index+1);
     if (tm < time_1) {
       incr(state, tm - last_tm, TH, fullstate);
@@ -1088,11 +1088,13 @@ public:
     }
 
     unsigned int t_cumulator_size = 0;
+    unsigned int t_statdist_size = 0;
     for (auto& cum: cumulator_v) {
       t_cumulator_size += cum->sample_count;
+      t_statdist_size += cum->statdist_trajcount;
     }
 
-    Cumulator* ret_cumul = new Cumulator(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), t_cumulator_size);
+    Cumulator* ret_cumul = new Cumulator(runconfig, runconfig->getTimeTick(), runconfig->getMaxTime(), t_cumulator_size, t_statdist_size);
     size_t min_cumul_size = ~0ULL;
     size_t min_tick_index_size = ~0ULL;
     auto begin = cumulator_v.begin();
