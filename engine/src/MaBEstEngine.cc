@@ -211,22 +211,9 @@ void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thre
   NetworkState network_state; 
   Probe probe;
   probe.start();
-#ifdef MPI_COMPAT
-unsigned long int sec = time(NULL);
-// std::cout << sec << " Running thread with seed " << (seed+start_count_thread) << " on node " <<  world_rank  << std::endl;
-
-  // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << " on node " << world_rank << std::endl;
-#else
-  // std::cout << "Running samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << std::endl;
-#endif
   
   RandomGenerator* random_generator = randgen_factory->generateRandomGenerator(seed);
   for (unsigned int nn = 0; nn < sample_count_thread; ++nn) {
-#ifdef MPI_COMPAT
-    // std::cout << sec << " Running thread with seed " << seed+start_count_thread+nn  << " on node " << world_rank << std::endl;
-#else 
-    // std::cout << "Running thread with seed " << seed+start_count_thread+nn << std::endl;
-#endif
     random_generator->setSeed(seed+start_count_thread+nn);
     cumulator->rewind();
     network->initStates(network_state, random_generator);
@@ -261,23 +248,6 @@ unsigned long int sec = time(NULL);
 	}
 	++begin;
       }
-
-      // EV: 2018-12-19 suppressed this block and integrated fixed point management below
-      /*
-      if (total_rate == 0.0) {
-	std::cerr << "FP\n";
-	// may have several fixpoint maps
-	if (fixpoint_map->find(network_state.getState()) == fixpoint_map->end()) {
-	  (*fixpoint_map)[network_state.getState()] = 1;
-	} else {
-	  (*fixpoint_map)[network_state.getState()]++;
-	}
-	cumulator->cumul(network_state, max_time, 0.);
-	tm = max_time;
-	stable_cnt++;
-	break;
-      }
-      */
 
       double TH;
       if (total_rate == 0) {
@@ -321,13 +291,6 @@ unsigned long int sec = time(NULL);
     cumulator->trajectoryEpilogue();
   }
   
-  
-#ifdef MPI_COMPAT
-  // std::cout << "Finished samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << " on node " << world_rank << std::endl;
-#else
-  // std::cout << "Finished samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << std::endl;
-#endif
-  
   probe.stop();
   *elapsed_time = probe.elapsed_msecs();
   
@@ -343,10 +306,8 @@ void MaBEstEngine::run(std::ostream* output_traj)
 
 #ifdef MPI_COMPAT
   unsigned int start_sample_count = sample_count * world_rank;
-
 #else
   unsigned int start_sample_count = 0;
-    // start_sample_count += sample_count; 
 #endif
 
 #ifdef MPI_COMPAT
