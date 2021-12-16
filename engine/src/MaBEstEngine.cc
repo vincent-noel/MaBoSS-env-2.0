@@ -176,12 +176,13 @@ struct ArgWrapper {
   unsigned int sample_count_thread;
   Cumulator* cumulator;
   RandomGeneratorFactory* randgen_factory;
+  long long int* elapsed_time;
   int seed;
   STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map;
   std::ostream* output_traj;
 
-  ArgWrapper(MaBEstEngine* mabest, unsigned int start_count_thread, unsigned int sample_count_thread, Cumulator* cumulator, RandomGeneratorFactory* randgen_factory, int seed, STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map, std::ostream* output_traj) :
-    mabest(mabest), start_count_thread(start_count_thread), sample_count_thread(sample_count_thread), cumulator(cumulator), randgen_factory(randgen_factory), seed(seed), fixpoint_map(fixpoint_map), output_traj(output_traj) { }
+  ArgWrapper(MaBEstEngine* mabest, unsigned int start_count_thread, unsigned int sample_count_thread, Cumulator* cumulator, RandomGeneratorFactory* randgen_factory, long long int * elapsed_time, int seed, STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map, std::ostream* output_traj) :
+    mabest(mabest), start_count_thread(start_count_thread), sample_count_thread(sample_count_thread), cumulator(cumulator), randgen_factory(randgen_factory), elapsed_time(elapsed_time), seed(seed), fixpoint_map(fixpoint_map), output_traj(output_traj) { }
 };
 
 void* MaBEstEngine::threadWrapper(void *arg)
@@ -191,7 +192,7 @@ void* MaBEstEngine::threadWrapper(void *arg)
 #endif
   ArgWrapper* warg = (ArgWrapper*)arg;
   try {
-    warg->mabest->runThread(warg->cumulator, warg->start_count_thread, warg->sample_count_thread, warg->randgen_factory, warg->seed, warg->fixpoint_map, warg->output_traj);
+    warg->mabest->runThread(warg->cumulator, warg->start_count_thread, warg->sample_count_thread, warg->randgen_factory, warg->elapsed_time, warg->seed, warg->fixpoint_map, warg->output_traj);
   } catch(const BNException& e) {
     std::cerr << e;
   }
@@ -201,14 +202,15 @@ void* MaBEstEngine::threadWrapper(void *arg)
   return NULL;
 }
 
-void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thread, unsigned int sample_count_thread, RandomGeneratorFactory* randgen_factory, int seed, STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map, std::ostream* output_traj)
+void MaBEstEngine::runThread(Cumulator* cumulator, unsigned int start_count_thread, unsigned int sample_count_thread, RandomGeneratorFactory* randgen_factory, long long int* elapsed_time, int seed, STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map, std::ostream* output_traj)
 {
   const std::vector<Node*>& nodes = network->getNodes();
   std::vector<Node*>::const_iterator begin = nodes.begin();
   std::vector<Node*>::const_iterator end = nodes.end();
   unsigned int stable_cnt = 0;
   NetworkState network_state; 
-
+  Probe probe;
+  probe.start();
 #ifdef MPI_COMPAT
 unsigned long int sec = time(NULL);
 // std::cout << sec << " Running thread with seed " << (seed+start_count_thread) << " on node " <<  world_rank  << std::endl;
@@ -326,6 +328,9 @@ unsigned long int sec = time(NULL);
   // std::cout << "Finished samples " << start_count_thread << " to " << (start_count_thread + sample_count_thread-1) << std::endl;
 #endif
   
+  probe.stop();
+  *elapsed_time = probe.elapsed_msecs();
+  
   delete random_generator;
 }
 
@@ -344,19 +349,39 @@ void MaBEstEngine::run(std::ostream* output_traj)
     // start_sample_count += sample_count; 
 #endif
 
+#ifdef MPI_COMPAT
+  thread_elapsed_runtimes[world_rank].resize(thread_count);
+#else
+  thread_elapsed_runtimes.resize(thread_count);
+#endif
+
   Probe probe;
   for (unsigned int nn = 0; nn < thread_count; ++nn) {
     STATE_MAP<NetworkState_Impl, unsigned int>* fixpoint_map = new STATE_MAP<NetworkState_Impl, unsigned int>();
     fixpoint_map_v.push_back(fixpoint_map);
-    ArgWrapper* warg = new ArgWrapper(this, start_sample_count, cumulator_v[nn]->getSampleCount(), cumulator_v[nn], randgen_factory, seed, fixpoint_map, output_traj);
+
+#ifdef MPI_COMPAT
+    ArgWrapper* warg = new ArgWrapper(this, start_sample_count, cumulator_v[nn]->getSampleCount(), cumulator_v[nn], randgen_factory, &(thread_elapsed_runtimes[world_rank][nn]), seed, fixpoint_map, output_traj);
+#else
+    ArgWrapper* warg = new ArgWrapper(this, start_sample_count, cumulator_v[nn]->getSampleCount(), cumulator_v[nn], randgen_factory, &(thread_elapsed_runtimes[nn]), seed, fixpoint_map, output_traj);
+#endif
+
     pthread_create(&tid[nn], NULL, MaBEstEngine::threadWrapper, warg);
     arg_wrapper_v.push_back(warg);
 
     start_sample_count += cumulator_v[nn]->getSampleCount();
   }
   for (unsigned int nn = 0; nn < thread_count; ++nn) {
-    //std::cout << sec << " Lauching thread " << nn << ", seed = " << seed << std::endl;
+    
+    
     pthread_join(tid[nn], NULL);
+    sec= time(NULL);
+
+#ifdef MPI_COMPAT
+    std::cout << sec << " Thread " << nn << " on node " << world_rank << " : elapsed_time=" << thread_elapsed_runtimes[world_rank][nn]/1000.0 << "s" << std::endl;
+#else
+    std::cout << sec << " Thread " << nn << " : elapsed_time=" << thread_elapsed_runtimes[nn]/1000.0 << "s" << std::endl;
+#endif
   }
   probe.stop();
   elapsed_core_runtime = probe.elapsed_msecs();
