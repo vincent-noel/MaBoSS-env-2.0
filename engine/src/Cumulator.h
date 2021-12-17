@@ -181,6 +181,10 @@ class Cumulator {
     typename STATE_MAP<S, double> mp;
 
   public:
+    size_t size() const {
+      return mp.size();
+    }
+
     void incr(const S& fullstate, double tm_slice) {
       auto iter = mp.find(fullstate);
       if (iter == mp.end()) {
