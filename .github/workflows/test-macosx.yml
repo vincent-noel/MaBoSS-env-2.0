@@ -282,7 +282,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: libMaBoSS-2.4.0-osx64
-        path: /home/runner/work/MaBoSS-env-2.0/libMaBoSS-2.4.0-osx64.tar.gz
+        path: /Users/runner/work/MaBoSS-env-2.0/libMaBoSS-2.4.0-osx64.tar.gz
         
     - uses: actions/upload-release-asset@v1
       if: github.event_name == 'release'
@@ -291,7 +291,7 @@ jobs:
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_name: libMaBoSS-2.4.0-osx64.tar.gz
-        asset_path: /home/runner/work/MaBoSS-env-2.0/libMaBoSS-2.4.0-osx64.tar.gz
+        asset_path: /Users/runner/work/MaBoSS-env-2.0/libMaBoSS-2.4.0-osx64.tar.gz
         asset_content_type: application/zip
         
   conda_maboss:
