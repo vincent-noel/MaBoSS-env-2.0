@@ -275,7 +275,7 @@ jobs:
         make install_alib MAXNODES=256
         make install_alib MAXNODES=512
         make install_alib MAXNODES=1024
-        rm *.o
+        make clean
         cd ../../../
         tar -zcvf libMaBoSS-2.4.0-osx64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
