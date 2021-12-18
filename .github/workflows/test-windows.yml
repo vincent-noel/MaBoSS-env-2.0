@@ -207,7 +207,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: libMaBoSS-2.4.0-win64
-        path: D:\a\MaBoSS-env-2.0/MaBoSS-env-2.0/libMaBoSS-2.4.0-win64.tar.gz
+        path: D:\a\MaBoSS-env-2.0/libMaBoSS-2.4.0-win64.tar.gz
         
     - uses: actions/upload-release-asset@v1
       if: github.event_name == 'release'
@@ -217,7 +217,7 @@ jobs:
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_name: libMaBoSS-2.4.0-win64.zip
-        asset_path: D:\a\MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/libMaBoSS-2.4.0-win64.zip
+        asset_path: D:\a\MaBoSS-env-2.0/libMaBoSS-2.4.0-win64.zip
         asset_content_type: application/zip
         
       
