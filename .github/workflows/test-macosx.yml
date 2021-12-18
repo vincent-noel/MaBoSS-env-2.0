@@ -808,7 +808,7 @@ jobs:
             
   cmaboss_pypi:
     name: cMaBoSS PyPi package
-    runs-on: macos-11
+    runs-on: macos-10.15
     needs: cmaboss
     if: github.ref == 'refs/heads/master' || github.event_name == 'release'
 
@@ -911,7 +911,7 @@ jobs:
 
   cmaboss_wheel_test:
     name: cMaBoSS Wheel test
-    runs-on: macos-11
+    runs-on: macos-10.15
     needs: cmaboss_pypi
     strategy:
       matrix:
@@ -955,7 +955,7 @@ jobs:
        
   cmaboss_wheel_publish:
     name: cMaBoSS Wheel publish
-    runs-on: macos-11
+    runs-on: macos-10.15
     needs: cmaboss_wheel_test
     strategy:
       matrix:
