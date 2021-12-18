@@ -168,7 +168,7 @@ jobs:
         
   maboss_library:
     runs-on: windows-latest
-    name: Building MaBoSS Windows 64bits binary
+    name: Building MaBoSS Windows 64bits library
     needs: build
     # if: github.event_name == 'release'
 
@@ -184,7 +184,7 @@ jobs:
         update: true
         install: flex bison make gcc diffutils mingw-w64-x86_64-toolchain mingw-w64-x86_64-python-pip mingw-w64-x86_64-python-numpy mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas mingw-w64-x86_64-libxml2 mingw-w64-x86_64-cmake zip
             
-    - name: Build binary
+    - name: Build library
       run: |
         rm -fr engine/pub/*
         cd engine/src
@@ -210,6 +210,8 @@ jobs:
         path: D:\a\MaBoSS-env-2.0/MaBoSS-env-2.0/libMaBoSS-2.4.0-win64.tar.gz
         
     - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
