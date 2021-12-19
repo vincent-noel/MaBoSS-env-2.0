@@ -92,7 +92,7 @@ jobs:
         
   maboss_llvm:
     name: MaBoSS (clang)
-    runs-on: macos-latest
+    runs-on: macos-10.15
 
     steps:
     - uses: actions/checkout@v2
@@ -100,6 +100,8 @@ jobs:
       run : |
         brew install flex bison libxml2 cmake
         pip install numpy
+        xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p'
+
     
     - name: Get cmake version
       id: get-cmake-version
@@ -107,12 +109,18 @@ jobs:
         echo "::set-output name=version::$(cmake --version | head -n 1 | cut -d' ' -f 3)"
       shell: bash
 
+    - name: Get xcode version
+      id: get-xcode-version
+      run: |
+        echo "::set-output name=version::$(xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p')"
+      shell: bash  
+
     - name: Cache compiled libSBML
       id: cache-libsbml-clang
       uses: actions/cache@v2
       with:
         path: /Users/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/libSBML-5.19.0-Source
-        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}-${{ steps.get-xcode-version.outputs.version }}
 
     - name: Compiling libSBML
       if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
@@ -169,7 +177,7 @@ jobs:
   
   maboss_binary:
     name: MaBoSS MacOSX 64 bits binary
-    runs-on: macos-latest
+    runs-on: macos-10.15
     needs: [maboss, maboss_llvm]
     if: github.event_name == 'release'
 
@@ -184,13 +192,19 @@ jobs:
       run: |
         echo "::set-output name=version::$(cmake --version | head -n 1 | cut -d' ' -f 3)"
       shell: bash
+    
+    - name: Get xcode version
+      id: get-xcode-version
+      run: |
+        echo "::set-output name=version::$(xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p')"
+      shell: bash  
 
     - name: Cache compiled libSBML
       id: cache-libsbml-clang
       uses: actions/cache@v2
       with:
         path: /Users/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/libSBML-5.19.0-Source
-        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}-${{ steps.get-xcode-version.outputs.version }}
 
     - name: Compiling libSBML
       if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
@@ -523,7 +537,7 @@ jobs:
 ###################################################################################################                        
   cmaboss:
     name: cMaBoSS
-    runs-on: macos-latest
+    runs-on: macos-10.15
 
     steps:
     - uses: actions/checkout@v2
@@ -539,12 +553,19 @@ jobs:
         echo "::set-output name=version::$(cmake --version | head -n 1 | cut -d' ' -f 3)"
       shell: bash
 
+    - name: Get xcode version
+      id: get-xcode-version
+      run: |
+        echo "::set-output name=version::$(xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p')"
+      shell: bash
+      
+
     - name: Cache compiled libSBML
       id: cache-libsbml-clang
       uses: actions/cache@v2
       with:
         path: /Users/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/libSBML-5.19.0-Source
-        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}-${{ steps.get-xcode-version.outputs.version }}
 
     - name: Compiling libSBML
       if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
@@ -837,6 +858,7 @@ jobs:
       run: |
         brew install flex bison gcc@10 python3 libxml2 cmake
         pip3 install numpy delocate
+        xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p'
     
     - name: Get cmake version
       id: get-cmake-version
@@ -844,12 +866,18 @@ jobs:
         echo "::set-output name=version::$(cmake --version | head -n 1 | cut -d' ' -f 3)"
       shell: bash
 
+    - name: Get xcode version
+      id: get-xcode-version
+      run: |
+        echo "::set-output name=version::$(xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p')"
+      shell: bash
+      
     - name: Cache compiled libSBML
       id: cache-libsbml-clang
       uses: actions/cache@v2
       with:
         path: /Users/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/libSBML-5.19.0-Source
-        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace-${{ steps.get-cmake-version.outputs.version }}-${{ steps.get-xcode-version.outputs.version }}
 
     - name: Compiling libSBML
       if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
