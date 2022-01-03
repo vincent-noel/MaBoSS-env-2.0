@@ -167,13 +167,7 @@ class Cumulator {
       TickValue t_tick_value;
       while ( t_iterator.hasNext()) {
 
-#ifdef USE_NEXT_OPT
-        const NetworkState_Impl& state = t_iterator.next2(t_tick_value);
-#else
-        NetworkState_Impl state;
-        t_iterator.next(t_state, t_tick_value);
-#endif
-        
+        const NetworkState_Impl& state = t_iterator.next2(t_tick_value);        
         NetworkState t_state(state);
         
         t_state.my_MPI_Pack(buff, size_pack, position);
@@ -239,12 +233,7 @@ class Cumulator {
       TickValue t_tick_value;
       while ( t_iterator.hasNext()) {
 
-#ifdef USE_NEXT_OPT
         const NetworkState_Impl& state = t_iterator.next2(t_tick_value);
-#else
-        NetworkState_Impl state;
-        t_iterator.next(t_state, t_tick_value);
-#endif
         
         NetworkState t_state(state);
         t_state.my_MPI_Send(dest);
@@ -340,13 +329,7 @@ class Cumulator {
       double tm_slice;
       while ( t_hd_iterator.hasNext()) {
 
-#ifdef USE_NEXT_OPT
-        const NetworkState_Impl& state = t_hd_iterator.next2(tm_slice);
-#else
-        NetworkState_Impl state;
-        t_hd_iterator.next(state, tm_slice);
-#endif
-        
+        const NetworkState_Impl& state = t_hd_iterator.next2(tm_slice);        
         NetworkState t_state(state);
       
         t_state.my_MPI_Pack(buff, size_pack, position);
@@ -398,12 +381,7 @@ class Cumulator {
       double tm_slice;
       while ( t_hd_iterator.hasNext()) {
 
-#ifdef USE_NEXT_OPT
         const NetworkState_Impl& state = t_hd_iterator.next2(tm_slice);
-#else
-        NetworkState_Impl state;
-        t_hd_iterator.next(state, tm_slice);
-#endif
         
         NetworkState t_state(state);
         t_state.my_MPI_Send(dest);
