@@ -48,6 +48,10 @@ else
 	endif
 endif
 
+ifeq ($(USE_JEMALLOC), 1)
+	LDL_FLAG := $(LDL_FLAG) -ljemalloc
+endif
+
 ifdef SBML_COMPAT
 SBML_FLAG = -DSBML_COMPAT
 SBML_LIB = -lsbml
