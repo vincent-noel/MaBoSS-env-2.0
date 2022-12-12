@@ -128,7 +128,7 @@ PopMaBEstEngine::PopMaBEstEngine(PopNetwork *pop_network, RunConfig *runconfig) 
       NetworkState_Impl state2 = ~internal_state.getState();
       cumulator->setOutputMask(PopNetworkState(state2, 1));
 #else
-      cumulator->setOutputMask(PopNetworkState(~internal_state.getState(), 1));
+      cumulator->setOutputMask(PopNetworkState(~internal_state.getState(), runconfig->getEchPop()));
 #endif
     }
     cumulator_v[nn] = cumulator;

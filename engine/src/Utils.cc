@@ -160,3 +160,19 @@ bool hasEnding (std::string const &fullString, std::string const &ending) {
         return false;
     }
 }
+
+int powint(int base, int exp)
+{
+	assert(exp >= 0 && "powint: exp parameter has negative value");
+
+  int result = 1;
+	while (exp)
+	{
+		if (exp & 1)
+			result *= base;
+		exp >>= 1;
+		base *= base;
+	}
+
+	return result;
+}

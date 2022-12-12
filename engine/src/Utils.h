@@ -89,6 +89,6 @@ static NullBuffer null_buffer;
 
 bool hasEnding (std::string const &fullString, std::string const &ending);
 
-
+int powint(int base, int exp);
 
 #endif

@@ -92,12 +92,14 @@
 #include <iostream>
 #include <strings.h>
 #include <string.h>
+#include <cmath>
 #ifdef USE_STATIC_BITSET
 #include <bitset>
 #elif defined(USE_DYNAMIC_BITSET)
 #include "MBDynBitset.h"
 #endif
 #include "Function.h"
+#include "Utils.h"
 
 #ifdef MPI_COMPAT
 #include <mpi.h>
@@ -1128,12 +1130,16 @@ public:
     // return PopNetworkState(state & mask.getState());
     std::map<NetworkState_Impl, unsigned int> new_map;
     NetworkState networkstate_mask = mask.getMap().begin()->first;
+    unsigned int value_mask = mask.getMap().begin()->second;
     
     
     
     for (auto elem: mp) {
       NetworkState_Impl new_state = elem.first & networkstate_mask.getState();
-      new_map[new_state] = elem.second;
+      if (value_mask == 1)
+        new_map[new_state] = elem.second;
+      else
+        new_map[new_state] = powint(value_mask,static_cast<int>(floor(log(elem.second)/log(value_mask))));
     }
     return PopNetworkState(new_map);
   }
