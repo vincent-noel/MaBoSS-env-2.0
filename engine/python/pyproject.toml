@@ -13,7 +13,8 @@ build-backend = "setuptools.build_meta"
 [tool.cibuildwheel.linux]
 before-all = [
     "yum install wget libxml2-devel -y",
-    "bash engine/python/install_libsbml_linux.sh"
+    "GCC=gcc CXX=g++ INSTALL_PATH=/usr/ BUILD_PATH=/tmp/ LIBXML_LIBDIR=/usr/lib LIBXML_INCLUDEDIR=/usr/include/libxml2 bash scripts/build_libsbml.sh",
+    "BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh"
 ]
 skip = [
     "*-manylinux_i686",
