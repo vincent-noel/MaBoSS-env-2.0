@@ -24,7 +24,8 @@ skip = [
 [tool.cibuildwheel.macos]
 before-all = [
     "brew install libxml2",
-    "bash engine/python/install_libsbml_macos.sh"
+    "GCC=clang CXX=clang++ INSTALL_PATH=/usr/local/ BUILD_PATH=/tmp/ LIBXML_LIBDIR=/usr/local/opt/libxml2/lib LIBXML_INCLUDEDIR=/usr/local/opt/libxml2/include/libxml2/ bash scripts/build_libsbml.sh",
+    "BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh"
 ]
 skip = ["pp*"]
 
