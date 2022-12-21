@@ -1,0 +1,572 @@
+name: MaBoSS Assets
+on:
+  workflow_run:
+    workflows: ["MaBoSS Tests"]
+    branches: [master]
+    types: 
+      - completed
+
+jobs:
+  
+  maboss_binary:
+    name: Building MaBoSS linux64 binary
+    runs-on: ubuntu-20.04
+    env:  
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /usr/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/lib/
+      LIBXML_INCLUDEDIR: /usr/include/libxml2
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get install flex bison
+        pip install numpy
+    
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-gcc-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: |
+        bash scripts/build_libsbml.sh
+
+    - name: Install libSBML
+      run: |
+        sudo env BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh
+          
+    - name: Build binary
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_static SBML_COMPAT=1
+        make install_static MAXNODES=128 SBML_COMPAT=1
+        make install_static MAXNODES=256 SBML_COMPAT=1
+        make install_static MAXNODES=512 SBML_COMPAT=1
+        make install_static MAXNODES=1024 SBML_COMPAT=1
+        cd ../pub
+        zip MaBoSS-linux64.zip *
+        
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: MaBoSS-linux64
+        path: /home/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/MaBoSS-linux64.zip
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: MaBoSS-linux64.zip
+        asset_path: /home/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/MaBoSS-linux64.zip
+        asset_content_type: application/zip
+  
+  
+  maboss_library:
+    name: Building MaBoSS linux64 library
+    runs-on: ubuntu-20.04
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get install flex bison
+          
+    - name: Build binary
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_lib 
+        make install_lib MAXNODES=128
+        make install_lib MAXNODES=256
+        make install_lib MAXNODES=512
+        make install_lib MAXNODES=1024
+        make install_alib 
+        make install_alib MAXNODES=128
+        make install_alib MAXNODES=256
+        make install_alib MAXNODES=512
+        make install_alib MAXNODES=1024
+        make clean
+        cd ../../../
+        tar -zcvf libMaBoSS-linux64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
+        
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: libMaBoSS-linux64
+        path: /home/runner/work/MaBoSS-env-2.0/libMaBoSS-linux64.tar.gz
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: libMaBoSS-linux64.tar.gz
+        asset_path: /home/runner/work/MaBoSS-env-2.0/libMaBoSS-linux64.tar.gz
+        asset_content_type: application/gzip
+  
+  maboss_library_sbml:
+    name: Building MaBoSS linux64 library with libSBML
+    runs-on: ubuntu-20.04
+    env:
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /usr/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/lib/
+      LIBXML_INCLUDEDIR: /usr/include/libxml2
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get install flex bison
+    
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-gcc-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+
+    - name: Install libSBML
+      run: sudo env BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh  
+              
+    - name: Build binary
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_lib SBML_COMPAT=1
+        make install_lib SBML_COMPAT=1 MAXNODES=128
+        make install_lib SBML_COMPAT=1 MAXNODES=256
+        make install_lib SBML_COMPAT=1 MAXNODES=512
+        make install_lib SBML_COMPAT=1 MAXNODES=1024
+        make install_alib SBML_COMPAT=1 
+        make install_alib SBML_COMPAT=1 MAXNODES=128
+        make install_alib SBML_COMPAT=1 MAXNODES=256
+        make install_alib SBML_COMPAT=1 MAXNODES=512
+        make install_alib SBML_COMPAT=1 MAXNODES=1024
+        make clean
+        cd ../../../
+        tar -zcvf libMaBoSS-sbml-linux64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
+        
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: libMaBoSS-sbml-linux64
+        path: /home/runner/work/MaBoSS-env-2.0/libMaBoSS-sbml-linux64.tar.gz
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: libMaBoSS-sbml-linux64.tar.gz
+        asset_path: /home/runner/work/MaBoSS-env-2.0/libMaBoSS-sbml-linux64.tar.gz
+        asset_content_type: application/gzip
+        
+  maboss_binary_macos:
+    name: MaBoSS MacOSX 64 bits binary
+    runs-on: macos-11
+    env:  
+      GCC: gcc-11
+      CXX: g++-11
+      INSTALL_PATH: /usr/local/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        brew install flex bison libxml2 cmake gcc@11
+      
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc11
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-g++11-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc11.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+        
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+          
+    - name: Build binary
+      run: |
+        export CXXFLAGS="${CXXFLAGS} -I/usr/local/include -I/usr/local/include/libxml2"
+        export LDFLAGS="${LDFLAGS} -L/usr/local/lib -lxml2"
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_static GCC=gcc-11 CXX=g++-11 SBML_COMPAT=1
+        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=128 SBML_COMPAT=1
+        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=256 SBML_COMPAT=1
+        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=512 SBML_COMPAT=1
+        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=1024 SBML_COMPAT=1
+        cd ../pub
+        zip MaBoSS-osx64.zip *
+    
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: MaBoSS-osx64
+        path: /Users/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/MaBoSS-osx64.zip
+            
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: MaBoSS-osx64.zip
+        asset_path: /Users/runner/work/MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/MaBoSS-osx64.zip
+        asset_content_type: application/zip
+        
+  maboss_library_macos:
+    name: Building MaBoSS osx library
+    runs-on: macos-11
+    if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        brew install flex bison gcc@11
+              
+    - name: Build library
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_lib GCC=gcc-11 CXX=g++-11
+        make install_lib MAXNODES=128 GCC=gcc-11 CXX=g++-11
+        make install_lib MAXNODES=256 GCC=gcc-11 CXX=g++-11
+        make install_lib MAXNODES=512 GCC=gcc-11 CXX=g++-11
+        make install_lib MAXNODES=1024 GCC=gcc-11 CXX=g++-11
+        make install_alib GCC=gcc-11 CXX=g++-11
+        make install_alib MAXNODES=128 GCC=gcc-11 CXX=g++-11
+        make install_alib MAXNODES=256 GCC=gcc-11 CXX=g++-11
+        make install_alib MAXNODES=512 GCC=gcc-11 CXX=g++-11
+        make install_alib MAXNODES=1024 GCC=gcc-11 CXX=g++-11
+        make clean
+        cd ../../../
+        tar -zcvf libMaBoSS-osx64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
+        
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: libMaBoSS-osx64
+        path: /Users/runner/work/MaBoSS-env-2.0/libMaBoSS-osx64.tar.gz
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: libMaBoSS-osx64.tar.gz
+        asset_path: /Users/runner/work/MaBoSS-env-2.0/libMaBoSS-osx64.tar.gz
+        asset_content_type: application/gzip     
+        
+  maboss_library_sbml_macos:
+    name: Building MaBoSS osx library with libSBML
+    runs-on: macos-11
+    env:  
+      GCC: gcc-11
+      CXX: g++-11
+      INSTALL_PATH: /usr/local/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        brew install flex bison gcc@11 libxml2 cmake
+    
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc11
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-g++11-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc11.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+        
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+              
+    - name: Build library
+      run: |
+        export CXXFLAGS="${CXXFLAGS} -I/usr/local/include -I/usr/local/include/libxml2"
+        export LDFLAGS="${LDFLAGS} -L/usr/local/lib -lxml2"
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install GCC=gcc-11 CXX=g++-11
+        make install_lib SBML_COMPAT=1 GCC=gcc-11 CXX=g++-11
+        make install_lib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=128 CXX=g++-11
+        make install_lib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=256 CXX=g++-11
+        make install_lib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=512 CXX=g++-11
+        make install_lib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=1024 CXX=g++-11
+        make install_alib SBML_COMPAT=1 GCC=gcc-11 CXX=g++-11
+        make install_alib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=128 CXX=g++-11
+        make install_alib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=256 CXX=g++-11
+        make install_alib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=512 CXX=g++-11
+        make install_alib SBML_COMPAT=1 GCC=gcc-11 MAXNODES=1024 CXX=g++-11
+        make clean
+        cd ../../../
+        tar -zcvf libMaBoSS-sbml-osx64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
+        
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: libMaBoSS-sbml-osx64
+        path: /Users/runner/work/MaBoSS-env-2.0/libMaBoSS-sbml-osx64.tar.gz
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: libMaBoSS-sbml-osx64.tar.gz
+        asset_path: /Users/runner/work/MaBoSS-env-2.0/libMaBoSS-sbml-osx64.tar.gz
+        asset_content_type: application/gzip
+        
+      
+  maboss_binary_windows:
+    runs-on: windows-latest
+    name: Building MaBoSS Windows 64bits binary
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /mingw64/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /mingw64/lib/
+      LIBXML_INCLUDEDIR: /mingw64/include/libxml2/
+          
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: flex bison make gcc diffutils mingw-w64-x86_64-toolchain mingw-w64-x86_64-python-pip mingw-w64-x86_64-python-numpy mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas mingw-w64-x86_64-libxml2 mingw-w64-x86_64-cmake zip
+        
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v2
+      with:
+        path: D:/a/_temp/msys64/tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-namespace
+        
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: |
+        bash scripts/build_libsbml.sh
+    
+    - name: Install libSBML
+      run: |
+        bash scripts/install_libsbml.sh
+      
+    - name: Build binary
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_static SBML_COMPAT=1
+        make install_static MAXNODES=128 SBML_COMPAT=1
+        make install_static MAXNODES=256 SBML_COMPAT=1
+        make install_static MAXNODES=512 SBML_COMPAT=1
+        make install_static MAXNODES=1024 SBML_COMPAT=1
+        cd ../pub
+        zip MaBoSS-win64.zip *
+    
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: MaBoSS-win64
+        path: D:\a\MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/MaBoSS-win64.zip
+      
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: MaBoSS-win64.zip
+        asset_path: D:\a\MaBoSS-env-2.0/MaBoSS-env-2.0/engine/pub/MaBoSS-win64.zip
+        asset_content_type: application/zip
+        
+  maboss_library_windows:
+    runs-on: windows-latest
+    name: Building MaBoSS Windows 64bits library
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    defaults:
+      run:
+        shell: msys2 {0}
+        
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: flex bison make zip mingw-w64-x86_64-binutils mingw-w64-x86_64-gcc mingw-w64-x86_64-headers-git mingw-w64-x86_64-gcc-libs mingw-w64-x86_64-libwinpthread-git mingw-w64-x86_64-winpthreads-git mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas mingw-w64-x86_64-libxml2 mingw-w64-x86_64-bzip2
+            
+    - name: Build library
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_lib 
+        make install_lib MAXNODES=128
+        make install_lib MAXNODES=256
+        make install_lib MAXNODES=512
+        make install_lib MAXNODES=1024
+        make install_alib 
+        make install_alib MAXNODES=128
+        make install_alib MAXNODES=256
+        make install_alib MAXNODES=512
+        make install_alib MAXNODES=1024
+        make clean
+        cd ../../../
+        tar -zcvf libMaBoSS-win64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
+        
+      
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: libMaBoSS-win64
+        path: D:\a\MaBoSS-env-2.0/libMaBoSS-win64.tar.gz
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: libMaBoSS-win64.tar.gz
+        asset_path: D:\a\MaBoSS-env-2.0/libMaBoSS-win64.tar.gz
+        asset_content_type: application/gzip
+      
+  maboss_sbml_library_windows:
+    runs-on: windows-latest
+    name: Building MaBoSS Windows 64bits library with libSBML
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+
+    defaults:
+      run:
+        shell: msys2 {0}
+        
+    env:
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /mingw64/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /mingw64/lib/
+      LIBXML_INCLUDEDIR: /mingw64/include/libxml2/
+          
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: flex bison make gcc diffutils mingw-w64-x86_64-toolchain mingw-w64-x86_64-python-pip mingw-w64-x86_64-python-numpy mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas mingw-w64-x86_64-libxml2 mingw-w64-x86_64-cmake
+        
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v2
+      with:
+        path: D:/a/_temp/msys64/tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-namespace
+        
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: |
+        bash scripts/build_libsbml.sh
+    
+    - name: Install libSBML
+      run: |
+        bash scripts/install_libsbml.sh
+      
+    - name: Build library
+      run: |
+        rm -fr engine/pub/*
+        cd engine/src
+        make clean
+        make install_lib SBML_COMPAT=1
+        make install_lib MAXNODES=128 SBML_COMPAT=1
+        make install_lib MAXNODES=256 SBML_COMPAT=1
+        make install_lib MAXNODES=512 SBML_COMPAT=1
+        make install_lib MAXNODES=1024 SBML_COMPAT=1
+        make install_alib SBML_COMPAT=1
+        make install_alib MAXNODES=128 SBML_COMPAT=1
+        make install_alib MAXNODES=256 SBML_COMPAT=1
+        make install_alib MAXNODES=512 SBML_COMPAT=1
+        make install_alib MAXNODES=1024 SBML_COMPAT=1
+        make clean
+        cd ../../../
+        tar -zcvf libMaBoSS-sbml-win64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
+        
+      
+    - uses: actions/upload-artifact@v2
+      if: github.event_name != 'release'
+      with:
+        name: libMaBoSS-sbml-win64
+        path: D:\a\MaBoSS-env-2.0/libMaBoSS-sbml-win64.tar.gz
+        
+    - uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release'
+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_name: libMaBoSS-sbml-win64.tar.gz
+        asset_path: D:\a\MaBoSS-env-2.0/libMaBoSS-sbml-win64.tar.gz
+        asset_content_type: application/gzip
+  

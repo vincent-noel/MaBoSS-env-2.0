@@ -1,0 +1,98 @@
+name: cMaBoSS Tests
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
+
+jobs:   
+  cmaboss:
+    name: cMaBoSS
+    runs-on: ubuntu-20.04
+    env:
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /usr/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/lib/
+      LIBXML_INCLUDEDIR: /usr/include/libxml2
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -yq python3-pip python3-setuptools
+        sudo pip3 install numpy
+
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-gcc-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+        
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+        
+    - name: Build cMaBoSS
+      run: |
+        cd engine/src
+        make
+        cd ../python
+        cp -r ../src cmaboss
+        pip3 install .
+        cd ../..
+    
+    - name: Test cMaBoSS
+      run: bash scripts/run_cmaboss_tests.sh
+
+  cmaboss_macos:
+    name: cMaBoSS
+    runs-on: macos-11
+    env:
+      GCC: clang
+      CXX: clang++
+      INSTALL_PATH: /usr/local/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2/
+    steps:
+    - uses: actions/checkout@v3 
+    - name: Install dependencies
+      run: |
+        brew install flex bison python3 libxml2 cmake
+        pip3 install numpy wheel delocate
+
+    - name: Cache compiled libSBML
+      id: cache-libsbml-clang
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+    
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+            
+    - name: Build cMaBoSS
+      run: |
+        cd engine/src
+        make
+        cd ../python
+        cp -r ../src cmaboss
+        python3 -m pip wheel -w wheelhouse .
+        cp /usr/local/lib/libsbml*.dylib .
+        delocate-wheel -w fixed_wheels -v `ls wheelhouse/cmaboss*.whl`
+        pip3 install `ls fixed_wheels/cmaboss*.whl` 
+        
+    - name: Test cMaBoSS
+      run: bash scripts/run_cmaboss_tests.sh

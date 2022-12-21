@@ -1,0 +1,272 @@
+name: MaBoSS Tests
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
+
+jobs:
+  maboss:
+    name: MaBoSS (gcc)
+    runs-on: ubuntu-20.04
+    env:
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /usr/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/lib/
+      LIBXML_INCLUDEDIR: /usr/include/libxml2
+      
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get install flex bison
+        pip install numpy
+    
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-gcc-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+        
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        make install SBML_COMPAT=1
+        make MAXNODES=128 install SBML_COMPAT=1
+    
+    - name: Test MaBoSS
+      run: bash scripts/run_tests.sh        
+        
+  maboss_llvm:
+    name: MaBoSS (clang)
+    runs-on: ubuntu-20.04
+    env:
+      GCC: clang
+      CXX: clang++
+      INSTALL_PATH: /usr/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/lib/
+      LIBXML_INCLUDEDIR: /usr/include/libxml2
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        sudo apt-get install flex bison clang
+        pip install numpy
+        
+    - name: Cache compiled libSBML
+      id: cache-libsbml-clang
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-clang-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+        
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+        
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        make GCC=clang CXX=clang++ install SBML_COMPAT=1
+        make GCC=clang CXX=clang++ MAXNODES=128 install SBML_COMPAT=1
+    
+    - name: Test MaBoSS
+      run: bash scripts/run_tests.sh
+  
+  maboss_mpi:
+    name: MaBoSS MPI
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get install flex bison libopenmpi-dev
+        pip install numpy
+    
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        make install CXX=mpic++ MPI_COMPAT=1
+        make install CXX=mpic++ MPI_COMPAT=1 MAXNODES=128
+       
+    - name: Test MaBoSS
+      run: bash scripts/run_mpi_tests.sh
+     
+  maboss_macos:
+    name: MaBoSS
+    runs-on: macos-11
+    env:
+      GCC: gcc-11
+      CXX: g++-11
+      INSTALL_PATH: /usr/local
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2/
+      
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        brew install flex bison gcc libxml2 cmake
+        pip install numpy
+        pwd
+
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-g++11-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+        
+    - name: Install libSBML
+      run: sudo bash scripts/install_libsbml.sh
+        
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        export CXXFLAGS="${CXXFLAGS} -I/usr/local/include -I/usr/local/include/libxml2"
+        export LDFLAGS="${LDFLAGS} -L/usr/local/lib -lxml2"
+        make CXX=g++-11 GCC=gcc-11 install SBML_COMPAT=1
+        make CXX=g++-11 GCC=gcc-11 MAXNODES=128 install SBML_COMPAT=1
+        
+    - name: Test MaBoSS
+      run: bash scripts/run_tests.sh
+        
+  maboss_llvm_macos:
+    name: MaBoSS (clang)
+    runs-on: macos-11
+    env:
+      GCC: clang
+      CXX: clang++
+      INSTALL_PATH: /usr/local
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2/
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        brew install flex bison libxml2 cmake
+        pip install numpy
+
+    - name: Cache compiled libSBML
+      id: cache-libsbml-clang
+      uses: actions/cache@v3
+      with:
+        path: /tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace
+
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-clang.outputs.cache-hit != 'true'
+      run: bash scripts/build_libsbml.sh
+    
+    - name: Install libSBML
+      run: |
+        sudo bash scripts/install_libsbml.sh
+
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        make CXX=g++ install SBML_COMPAT=1
+        make CXX=g++ MAXNODES=128 install SBML_COMPAT=1
+        
+    - name: Test MaBoSS
+      run: bash scripts/run_tests.sh
+  
+  maboss_mpi_macos:
+    name: MaBoSS MPI
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run : |
+        brew install flex bison gcc@10 libxml2 cmake openmpi
+        pip install numpy
+        
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make clean
+        make CXX=mpic++ install MPI_COMPAT=1
+        make CXX=mpic++ install MPI_COMPAT=1 MAXNODES=128
+        
+    - name: Test MaBoSS
+      run: bash scripts/run_mpi_tests.sh
+
+  maboss_windows:
+    name: MaBoSS Windows
+    runs-on: windows-latest
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      GCC: gcc
+      CXX: g++
+      INSTALL_PATH: /mingw64/
+      BUILD_PATH: /tmp/
+      LIBXML_LIBDIR: /mingw64/lib/
+      LIBXML_INCLUDEDIR: /mingw64/include/libxml2/
+          
+    steps:
+    - uses: actions/checkout@v3
+    
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: flex bison make gcc diffutils mingw-w64-x86_64-toolchain mingw-w64-x86_64-python-pip mingw-w64-x86_64-python-numpy mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas mingw-w64-x86_64-libxml2 mingw-w64-x86_64-cmake
+        
+    - name: Cache compiled libSBML
+      id: cache-libsbml-gcc
+      uses: actions/cache@v3
+      with:
+        path: D:/a/_temp/msys64/tmp/libSBML-5.19.0-Source
+        key: ${{ runner.os }}-libSBML-5.19-namespace
+        
+    - name: Compiling libSBML
+      if: steps.cache-libsbml-gcc.outputs.cache-hit != 'true'
+      run: |
+        bash scripts/build_libsbml.sh
+    
+    - name: Install libSBML
+      run: |
+        bash scripts/install_libsbml.sh
+        
+    - name: Build MaBoSS
+      run: |
+        cd engine/src
+        make MAXNODES=128 SBML_COMPAT=1 maboss
+        make SBML_COMPAT=1 maboss
+
+    - name: Test MaBoSS
+      run: bash scripts/run_tests.sh
+        
