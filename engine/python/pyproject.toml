@@ -25,7 +25,8 @@ skip = [
 before-all = [
     "brew install libxml2",
     "GCC=clang CXX=clang++ INSTALL_PATH=/usr/local/ BUILD_PATH=/tmp/ LIBXML_LIBDIR=/usr/local/opt/libxml2/lib LIBXML_INCLUDEDIR=/usr/local/opt/libxml2/include/libxml2/ bash scripts/build_libsbml.sh",
-    "BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh"
+    "BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh",
+    "cp /usr/local/lib/libsbml* ."
 ]
 skip = ["pp*"]
 

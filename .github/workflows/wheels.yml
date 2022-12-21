@@ -1,21 +1,26 @@
-name: Build
+name: Build cMaBoSS wheels
 
-on: [push, pull_request]
+on: 
+  workflow_run:
+    workflows: ["MaBoSS Tests"]
+    branches: [master]
+    types: 
+      - completed
+
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, macOS-11]
-
+  build_wheels_linux:
+    name: Build linux wheels
+    runs-on: ubuntu-20.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.11.3 numpy
+        run: python -m pip install cibuildwheel==2.11.3 numpy twine
 
       - name: Build wheels
         run: |
@@ -27,4 +32,66 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          path: engine/python/wheelhouse/*.whl
+          path: wheelhouse/*.whl
+          
+      - name: Upload cMaBoSS to test Pypi
+        if: github.repository == 'vincent-noel/MaBoSS-env-2.0' && github.ref == 'refs/heads/master'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TEST_TOKEN }}
+        run: |
+          python -m twine upload --repository testpypi --skip-existing wheelhouse/cmaboss*
+          
+      - name: Upload cMaBoSS to Pypi
+        if: github.repository == 'sysbio-curie/MaBoSS-env-2.0' && github.event_name == 'release'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python -m twine upload --skip-existing wheelhouse/cmaboss*
+          
+          
+          
+  build_wheels_macos:
+    name: Build MacOS wheels
+    runs-on: macOS-11
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.11.3 numpy twine
+
+      - name: Build wheels
+        run: |
+          cd engine/src
+          make grammars
+          cd ../../
+          cp -r engine/src engine/python/cmaboss/
+          python -m cibuildwheel --output-dir wheelhouse engine/python
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: wheelhouse/*.whl
+          
+      - name: Upload cMaBoSS to test Pypi
+        if: github.repository == 'vincent-noel/MaBoSS-env-2.0' && github.ref == 'refs/heads/master'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TEST_TOKEN }}
+        run: |
+          python -m twine upload --repository testpypi --skip-existing wheelhouse/cmaboss*
+          
+      - name: Upload cMaBoSS to Pypi
+        if: github.repository == 'sysbio-curie/MaBoSS-env-2.0' && github.event_name == 'release'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python -m twine upload --skip-existing wheelhouse/cmaboss*
+          
+          
