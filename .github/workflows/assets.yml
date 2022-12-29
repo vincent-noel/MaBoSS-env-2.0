@@ -192,13 +192,13 @@ jobs:
   maboss_binary_macos:
     name: MaBoSS MacOSX 64 bits binary
     runs-on: macos-11
-    env:  
-      GCC: gcc-11
-      CXX: g++-11
-      INSTALL_PATH: /usr/local/
+    env:
+      GCC: clang
+      CXX: clang++
+      INSTALL_PATH: /usr/local
       BUILD_PATH: /tmp/
       LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
-      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2
+      LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2/
     if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
@@ -208,11 +208,11 @@ jobs:
         brew install flex bison libxml2 cmake gcc@11
       
     - name: Cache compiled libSBML
-      id: cache-libsbml-gcc11
+      id: cache-libsbml-clang
       uses: actions/cache@v3
       with:
         path: /tmp/libSBML-5.19.0-Source
-        key: ${{ runner.os }}-libSBML-5.19-g++11-namespace
+        key: ${{ runner.os }}-libSBML-5.19-clang++-namespace
 
     - name: Compiling libSBML
       if: steps.cache-libsbml-gcc11.outputs.cache-hit != 'true'
@@ -223,16 +223,14 @@ jobs:
           
     - name: Build binary
       run: |
-        export CXXFLAGS="${CXXFLAGS} -I/usr/local/include -I/usr/local/include/libxml2"
-        export LDFLAGS="${LDFLAGS} -L/usr/local/lib -lxml2"
         rm -fr engine/pub/*
         cd engine/src
         make clean
-        make install_static GCC=gcc-11 CXX=g++-11 SBML_COMPAT=1
-        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=128 SBML_COMPAT=1
-        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=256 SBML_COMPAT=1
-        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=512 SBML_COMPAT=1
-        make install_static GCC=gcc-11 CXX=g++-11 MAXNODES=1024 SBML_COMPAT=1
+        make install_static GCC=clang CXX=clang++ SBML_COMPAT=1
+        make install_static GCC=clang CXX=clang++ MAXNODES=128 SBML_COMPAT=1
+        make install_static GCC=clang CXX=clang++ MAXNODES=256 SBML_COMPAT=1
+        make install_static GCC=clang CXX=clang++ MAXNODES=512 SBML_COMPAT=1
+        make install_static GCC=clang CXX=clang++ MAXNODES=1024 SBML_COMPAT=1
         cd ../pub
         zip MaBoSS-osx64.zip *
     
