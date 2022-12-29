@@ -11,7 +11,7 @@ jobs:
   test_docker:
     name: Docker MaBoSS Server
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
     
     steps:
     - uses: actions/checkout@v3
@@ -44,7 +44,7 @@ jobs:
   test_singularity:
     name: Singularity MaBoSS Server
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
    
     steps:
     - uses: actions/checkout@v3

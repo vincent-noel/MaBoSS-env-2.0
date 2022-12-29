@@ -18,7 +18,7 @@ jobs:
       BUILD_PATH: /tmp/
       LIBXML_LIBDIR: /usr/lib/
       LIBXML_INCLUDEDIR: /usr/include/libxml2
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -77,7 +77,7 @@ jobs:
   maboss_library:
     name: Building MaBoSS linux64 library
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -131,7 +131,7 @@ jobs:
       BUILD_PATH: /tmp/
       LIBXML_LIBDIR: /usr/lib/
       LIBXML_INCLUDEDIR: /usr/include/libxml2
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -199,7 +199,7 @@ jobs:
       BUILD_PATH: /tmp/
       LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
       LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -255,7 +255,7 @@ jobs:
   maboss_library_macos:
     name: Building MaBoSS osx library
     runs-on: macos-11
-    if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -308,7 +308,7 @@ jobs:
       BUILD_PATH: /tmp/
       LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
       LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -372,7 +372,7 @@ jobs:
   maboss_binary_windows:
     runs-on: windows-latest
     name: Building MaBoSS Windows 64bits binary
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
     
     defaults:
       run:
@@ -441,7 +441,7 @@ jobs:
   maboss_library_windows:
     runs-on: windows-latest
     name: Building MaBoSS Windows 64bits library
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     defaults:
       run:
@@ -495,7 +495,7 @@ jobs:
   maboss_sbml_library_windows:
     runs-on: windows-latest
     name: Building MaBoSS Windows 64bits library with libSBML
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     defaults:
       run:

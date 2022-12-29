@@ -11,7 +11,7 @@ jobs:
   cmaboss_conda_defaults:
     name: Build cMaBoSS Anaconda package
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -41,7 +41,7 @@ jobs:
   cmaboss_conda:
     name: Build cMaBoSS Anaconda package (conda-forge)
     runs-on: ubuntu-20.04
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -209,7 +209,7 @@ jobs:
   conda_cmaboss_macosx:
     name: cMaBoSS Conda package
     runs-on: macos-11
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3
@@ -244,7 +244,7 @@ jobs:
   conda_cmaboss_conda_forge_macosx:
     name: cMaBoSS Conda package (conda-forge)
     runs-on: macos-11
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
 
     steps:
     - uses: actions/checkout@v3

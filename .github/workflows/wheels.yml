@@ -12,7 +12,7 @@ jobs:
   build_wheels_linux:
     name: Build linux wheels
     runs-on: ubuntu-20.04
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -55,7 +55,7 @@ jobs:
   build_wheels_macos:
     name: Build MacOS wheels
     runs-on: macOS-11
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.workflow_run.conclusion == 'success' && (github.ref == 'refs/heads/master' || github.event_name == 'release')
     
     steps:
       - uses: actions/checkout@v3
