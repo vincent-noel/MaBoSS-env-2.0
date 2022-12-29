@@ -15,8 +15,8 @@ jobs:
       CXX: g++
       INSTALL_PATH: /usr/
       BUILD_PATH: /tmp/
-      LIBXML_LIBDIR: /usr/lib/
-      LIBXML_INCLUDEDIR: /usr/include/libxml2
+      LIBXML_LIBDIR: /usr/lib/x86_64-linux-gnu/libxml2.so
+      LIBXML_INCLUDEDIR: /usr/include/libxml2/
       
     steps:
     - uses: actions/checkout@v3
@@ -58,8 +58,8 @@ jobs:
       CXX: clang++
       INSTALL_PATH: /usr/
       BUILD_PATH: /tmp/
-      LIBXML_LIBDIR: /usr/lib/
-      LIBXML_INCLUDEDIR: /usr/include/libxml2
+      LIBXML_LIBDIR: /usr/lib/x86_64-linux-gnu/libxml2.so
+      LIBXML_INCLUDEDIR: /usr/include/libxml2/
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
@@ -121,7 +121,7 @@ jobs:
       CXX: g++-11
       INSTALL_PATH: /usr/local
       BUILD_PATH: /tmp/
-      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/libxml2.dylib
       LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2/
       
     steps:
@@ -166,7 +166,7 @@ jobs:
       CXX: clang++
       INSTALL_PATH: /usr/local
       BUILD_PATH: /tmp/
-      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/
+      LIBXML_LIBDIR: /usr/local/opt/libxml2/lib/libxml2.dylib
       LIBXML_INCLUDEDIR: /usr/local/opt/libxml2/include/libxml2/
     
     steps:
@@ -234,7 +234,7 @@ jobs:
       CXX: g++
       INSTALL_PATH: /mingw64/
       BUILD_PATH: /tmp/
-      LIBXML_LIBDIR: /mingw64/lib/
+      LIBXML_LIBDIR: /mingw64/lib/libxml2.dll.a
       LIBXML_INCLUDEDIR: /mingw64/include/libxml2/
           
     steps:
