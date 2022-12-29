@@ -57,7 +57,7 @@ jobs:
         cd ../pub
         zip MaBoSS-linux64.zip *
         
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: MaBoSS-linux64
@@ -105,7 +105,7 @@ jobs:
         cd ../../../
         tar -zcvf libMaBoSS-linux64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: libMaBoSS-linux64
@@ -173,7 +173,7 @@ jobs:
         cd ../../../
         tar -zcvf libMaBoSS-sbml-linux64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: libMaBoSS-sbml-linux64
@@ -234,7 +234,7 @@ jobs:
         cd ../pub
         zip MaBoSS-osx64.zip *
     
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: MaBoSS-osx64
@@ -280,7 +280,7 @@ jobs:
         cd ../../../
         tar -zcvf libMaBoSS-osx64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: libMaBoSS-osx64
@@ -350,7 +350,7 @@ jobs:
         cd ../../../
         tar -zcvf libMaBoSS-sbml-osx64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: libMaBoSS-sbml-osx64
@@ -384,7 +384,7 @@ jobs:
       LIBXML_INCLUDEDIR: /mingw64/include/libxml2/
           
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - uses: msys2/setup-msys2@v2
       with:
@@ -393,7 +393,7 @@ jobs:
         
     - name: Cache compiled libSBML
       id: cache-libsbml-gcc
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: D:/a/_temp/msys64/tmp/libSBML-5.19.0-Source
         key: ${{ runner.os }}-libSBML-5.19-namespace
@@ -420,7 +420,7 @@ jobs:
         cd ../pub
         zip MaBoSS-win64.zip *
     
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: MaBoSS-win64
@@ -446,7 +446,7 @@ jobs:
         shell: msys2 {0}
         
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - uses: msys2/setup-msys2@v2
       with:
@@ -473,7 +473,7 @@ jobs:
         tar -zcvf libMaBoSS-win64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
       
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: libMaBoSS-win64
@@ -508,7 +508,7 @@ jobs:
       LIBXML_INCLUDEDIR: /mingw64/include/libxml2/
           
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - uses: msys2/setup-msys2@v2
       with:
@@ -517,7 +517,7 @@ jobs:
         
     - name: Cache compiled libSBML
       id: cache-libsbml-gcc
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: D:/a/_temp/msys64/tmp/libSBML-5.19.0-Source
         key: ${{ runner.os }}-libSBML-5.19-namespace
@@ -551,7 +551,7 @@ jobs:
         tar -zcvf libMaBoSS-sbml-win64.tar.gz MaBoSS-env-2.0/README.md MaBoSS-env-2.0/LICENSE MaBoSS-env-2.0/engine/src MaBoSS-env-2.0/engine/include MaBoSS-env-2.0/engine/lib
         
       
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: github.event_name != 'release'
       with:
         name: libMaBoSS-sbml-win64
