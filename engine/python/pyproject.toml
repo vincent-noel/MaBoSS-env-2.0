@@ -28,6 +28,7 @@ before-all = [
     "BUILD_PATH=/tmp/ bash scripts/install_libsbml.sh",
     "cp /usr/local/lib/libsbml* ."
 ]
+archs = ["x86_64", "arm64"]
 skip = ["pp*"]
 
 [tool.cibuildwheel]
