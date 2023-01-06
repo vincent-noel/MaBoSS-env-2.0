@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew install flex bison python3 libxml2 cmake
-        pip3 install numpy wheel delocate
+        pip3 install numpy wheel delocate pandas
 
     - name: Cache compiled libSBML
       id: cache-libsbml-clang

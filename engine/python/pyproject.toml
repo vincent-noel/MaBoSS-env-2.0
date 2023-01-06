@@ -37,3 +37,4 @@ test-command = [
   "python -m unittest test",
   "python -m unittest test_128n",
 ]
+test-requires = ["pandas"]
