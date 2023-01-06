@@ -98,18 +98,53 @@ static PyObject* cPopMaBoSSResult_get_probtraj(cPopMaBoSSResultObject* self) {
   return self->engine->getMergedCumulator()->getNumpyStatesDists(self->network);
 }
 
-// static PyObject* cMaBoSSResult_get_last_probtraj(cMaBoSSResultObject* self) {
-//   return self->engine->getMergedCumulator()->getNumpyLastStatesDists(self->network);
+static PyObject* cPopMaBoSSResult_get_last_probtraj(cMaBoSSResultObject* self) {
+  return self->engine->getMergedCumulator()->getNumpyLastStatesDists(self->network);
+}
+
+// static PyObject* cPopMaBoSSResult_get_nodes_probtraj(cMaBoSSResultObject* self, PyObject* args) {
+
+//   std::vector<Node*> list_nodes;
+//   PyObject* pList = Py_None;
+  
+//   if (!PyArg_ParseTuple(args, "|O", &pList)) {
+//     PyErr_SetString(PyExc_TypeError, "Error parsing arguments");
+//     return NULL;
+//   }
+  
+//   if (pList != Py_None) {
+//     PyObject* pItem;
+//     int n = PyList_Size(pList);
+//     for (int i=0; i<n; i++) {
+//         pItem = PyList_GetItem(pList, i);
+//         list_nodes.push_back(self->network->getNode(std::string(PyUnicode_AsUTF8(pItem))));
+//     }
+//   }
+  
+//   return self->engine->getMergedCumulator()->getNumpyNodesDists(self->network, list_nodes);
 // }
 
-// static PyObject* cMaBoSSResult_get_nodes_probtraj(cMaBoSSResultObject* self) {
-//   return self->engine->getMergedCumulator()->getNumpyNodesDists(self->network);
-// }
+// static PyObject* cPopMaBoSSResult_get_last_nodes_probtraj(cMaBoSSResultObject* self, PyObject* args) {
 
-// static PyObject* cMaBoSSResult_get_last_nodes_probtraj(cMaBoSSResultObject* self) {
-//   return self->engine->getMergedCumulator()->getNumpyLastNodesDists(self->network);
+//   std::vector<Node*> list_nodes;
+//   PyObject* pList = Py_None;
+  
+//   if (!PyArg_ParseTuple(args, "|O", &pList)) {
+//     PyErr_SetString(PyExc_TypeError, "Error parsing arguments");
+//     return NULL;
+//   }
+  
+//   if (pList != Py_None) {
+//     PyObject* pItem;
+//     int n = PyList_Size(pList);
+//     for (int i=0; i<n; i++) {
+//         pItem = PyList_GetItem(pList, i);
+//         list_nodes.push_back(self->network->getNode(std::string(PyUnicode_AsUTF8(pItem))));
+//     }
+//   }
+  
+//   return self->engine->getMergedCumulator()->getNumpyLastNodesDists(self->network, list_nodes);
 // }
-
 static PyObject* cPopMaBoSSResult_display_fp(cPopMaBoSSResultObject* self, PyObject *args) 
 {
   char * filename = NULL;
@@ -178,9 +213,9 @@ static PyObject* cPopMaBoSSResult_display_run(cPopMaBoSSResultObject* self, PyOb
 static PyMethodDef cPopMaBoSSResult_methods[] = {
     {"get_fp_table", (PyCFunction) cPopMaBoSSResult_get_fp_table, METH_NOARGS, "gets the fixpoints table"},
     {"get_probtraj", (PyCFunction) cPopMaBoSSResult_get_probtraj, METH_NOARGS, "gets the raw states probability trajectories of the simulation"},
-    // {"get_last_probtraj", (PyCFunction) cMaBoSSResult_get_last_probtraj, METH_NOARGS, "gets the raw states probability trajectories of the simulation"},
-    // {"get_nodes_probtraj", (PyCFunction) cMaBoSSResult_get_nodes_probtraj, METH_NOARGS, "gets the raw states probability trajectories of the simulation"},
-    // {"get_last_nodes_probtraj", (PyCFunction) cMaBoSSResult_get_last_nodes_probtraj, METH_NOARGS, "gets the raw states probability trajectories of the simulation"},
+    {"get_last_probtraj", (PyCFunction) cPopMaBoSSResult_get_last_probtraj, METH_NOARGS, "gets the raw states probability trajectories of the simulation"},
+    // {"get_nodes_probtraj", (PyCFunction) cPopMaBoSSResult_get_nodes_probtraj, METH_VARARGS, "gets the raw states probability trajectories of the simulation"},
+    // {"get_last_nodes_probtraj", (PyCFunction) cPopMaBoSSResult_get_last_nodes_probtraj, METH_VARARGS, "gets the raw states probability trajectories of the simulation"},
     {"display_fp", (PyCFunction) cPopMaBoSSResult_display_fp, METH_VARARGS, "prints the fixpoints to a file"},
     {"display_probtraj", (PyCFunction) cPopMaBoSSResult_display_probtraj, METH_VARARGS, "prints the probtraj to a file"},
     // {"display_statdist", (PyCFunction) cMaBoSSResult_display_statdist, METH_VARARGS, "prints the statdist to a file"},
