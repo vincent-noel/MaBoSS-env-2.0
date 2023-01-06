@@ -176,7 +176,7 @@ jobs:
       run: |
         conda update conda
         conda update conda --all
-        conda install conda-build
+        conda install conda-build pandas
      
     - name: Install package
       run: |
@@ -211,7 +211,7 @@ jobs:
         conda config --add channels conda-forge
         conda config --set channel_priority strict
         conda update conda --all
-        conda install conda-build
+        conda install conda-build pandas
      
     - name: Install package
       run: |
