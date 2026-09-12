@@ -94,12 +94,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: C:\vcpkg\
-        key: ${{ runner.os }}-vcpkg-msvc
+        key: ${{ runner.os }}-vcpkg-msvc-libxml2-zlib
         
-    - name: Install libxml2
+    - name: Install libxml2 and zlib
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
       run: |
-        vcpkg install libxml2
+        vcpkg install libxml2 zlib
     
     - name: Cache compiled libSBML
       id: cache-libsbml-msvc
@@ -501,12 +501,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: C:\vcpkg\
-        key: ${{ runner.os }}-vcpkg-msvc
+        key: ${{ runner.os }}-vcpkg-msvc-libxml2-zlib
         
-    - name: Install libxml2
+    - name: Install libxml2 and zlib
       if: steps.cache-vcpkg.outputs.cache-hit != 'true'
       run: |
-        vcpkg install libxml2
+        vcpkg install libxml2 zlib
     
     - name: Cache compiled libSBML
       id: cache-libsbml-msvc
