@@ -272,7 +272,7 @@ jobs:
       fail-fast: false
       matrix:
         repo: [
-          {name: defaults, deployment_target: "11.1", libsbml: libsbml-plus-packages, libsbml_source: colomoto, build_number: 0, folder: "conda/defaults"},
+          {name: defaults, deployment_target: "11.1", libsbml: libsbml, libsbml_source: conda-forge, build_number: 0, folder: "conda/defaults"},
           {name: conda-forge, deployment_target: "11.0", libsbml: libsbml, libsbml_source: conda-forge, build_number: 1, folder: "conda/conda-forge"}
         ]
         version: [
@@ -285,7 +285,7 @@ jobs:
           {python: "3.14", numpy: "2.3"}
           ]
         exclude:
-          - repo: {name: defaults, deployment_target: "11.1", libsbml: libsbml-plus-packages, libsbml_source: colomoto, build_number: 0, folder: "conda/defaults"}
+          - repo: {name: defaults, deployment_target: "11.1", libsbml: libsbml, libsbml_source: conda-forge, build_number: 0, folder: "conda/defaults"}
             version: {python: "3.14", numpy: "2.3"}
     runs-on: macos-14
 

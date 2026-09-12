@@ -30,11 +30,6 @@ requirements:
     - make  # [not win]
     - cmake
     - ninja
-    - python {{ python }}
-    - numpy
-    - {{ LIBSBML_PACKAGE }}
-    - libxml2-devel
-    - python-gil  # [py>=313]
 
   host: 
     - python {{ python }}
@@ -43,21 +38,17 @@ requirements:
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x') }}
     - {{ LIBSBML_PACKAGE }}
     - libxml2-devel
-    - python-gil  # [py>=313]
   
   run: 
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x') }}
     - {{ LIBSBML_PACKAGE }}
     - libxml2-devel
-    - python-gil  # [py>=313]
 test:
   requires:
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x') }}
     - pandas
-    - python-gil  # [py>=313]
 
 about:
   home:  https://maboss.curie.fr
-
